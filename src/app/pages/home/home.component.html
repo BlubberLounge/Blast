@@ -1,0 +1,206 @@
+<div class="min-h-screen bg-animated-gradient overflow-x-hidden">
+  <!-- Animated Background Orbs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-purple-600/20 to-transparent rounded-full blur-3xl animate-blob"></div>
+    <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-blue-600/20 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+    <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-radial from-pink-600/15 to-transparent rounded-full blur-3xl animate-blob animation-delay-4000"></div>
+  </div>
+
+  <!-- Content -->
+  <div class="relative z-10 px-4 py-8 md:px-8 md:py-12 max-w-7xl mx-auto">
+    <!-- Header -->
+    <header class="text-center mb-12 md:mb-16">
+      <!-- Logo -->
+      <div class="inline-block relative">
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-display font-black tracking-tight">
+          <span class="bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent drop-shadow-lg">B</span>
+          <span class="bg-gradient-to-r from-red-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">L</span>
+          <span class="bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">A</span>
+          <span class="bg-gradient-to-r from-pink-400 via-rose-400 to-red-400 bg-clip-text text-transparent">S</span>
+          <span class="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">T</span>
+        </h1>
+        <!-- Glow effect -->
+        <div class="absolute inset-0 blur-3xl opacity-40 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 -z-10"></div>
+      </div>
+
+      <p class="text-white/60 text-lg md:text-xl mt-4 font-light tracking-wide">
+        Party Games Collection
+      </p>
+
+      <!-- Search Bar -->
+      <div class="mt-8 max-w-md mx-auto">
+        <div class="relative group">
+          <div class="glass-input rounded-2xl overflow-hidden">
+            <!-- Search Icon -->
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+              <svg class="w-5 h-5 text-white/40 group-focus-within:text-white/70 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+
+            <!-- Input -->
+            <input
+              type="text"
+              [value]="searchQuery()"
+              (input)="updateSearch($event)"
+              placeholder="Spiel suchen..."
+              class="w-full bg-transparent pl-12 pr-12 py-4 text-white placeholder-white/40 focus:outline-none"
+            />
+
+            <!-- Clear Button -->
+            @if (searchQuery()) {
+              <button
+                (click)="clearSearch()"
+                class="absolute inset-y-0 right-0 pr-4 flex items-center text-white/40 hover:text-white transition-colors z-10"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+          <!-- Favorites Filter Button -->
+          <div class="flex justify-end mt-3">
+            <button
+              (click)="toggleShowFavorites()"
+              [class]="showFavoritesOnly()
+                ? 'bg-pink-500/20 border-pink-500/50'
+                : 'glass-subtle border-transparent hover:bg-white/10'"
+              class="px-3 py-1.5 rounded-full text-white text-sm transition-all flex items-center gap-1.5 border"
+            >
+              @if (showFavoritesOnly()) {
+                <span class="text-sm">❤️</span>
+              } @else {
+                <span class="text-sm">🤍</span>
+              }
+              <span>Favoriten</span>
+              @if (favoritesCount > 0) {
+                <span class="text-white/50 text-xs">({{ favoritesCount }})</span>
+              }
+            </button>
+          </div>
+
+          <!-- No Results -->
+          @if (games().length === 0 && searchQuery()) {
+            <p class="text-white/40 text-sm mt-3">Keine Spiele gefunden für "{{ searchQuery() }}"</p>
+          }
+          @if (games().length === 0 && showFavoritesOnly() && !searchQuery()) {
+            <p class="text-white/40 text-sm mt-3">Keine Favoriten vorhanden</p>
+          }
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Games Grid (Masonry-style) -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 auto-rows-[minmax(140px,auto)] md:auto-rows-[minmax(160px,auto)]">
+      @for (game of games(); track game.id) {
+        <button
+          (click)="navigateTo(game)"
+          [class]="getCardClasses(game)"
+          [disabled]="!game.available"
+          class="game-card group relative overflow-hidden rounded-2xl md:rounded-3xl transition-all duration-500"
+          [class.cursor-pointer]="game.available"
+          [class.cursor-not-allowed]="!game.available"
+        >
+          <!-- Glass Background -->
+          <div class="absolute inset-0 glass"></div>
+
+          <!-- Gradient Overlay -->
+          <div
+            class="absolute inset-0 bg-gradient-to-br opacity-60 group-hover:opacity-80 transition-opacity duration-300"
+            [class]="game.gradient"
+          ></div>
+
+          <!-- Shine Effect -->
+          <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+          </div>
+
+          <!-- Disabled Overlay -->
+          @if (!game.available) {
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px] z-10"></div>
+          }
+
+          <!-- Content -->
+          <div class="relative z-20 h-full p-4 md:p-6 flex flex-col justify-between">
+            <!-- Top: Badge, Heart & Mascot -->
+            <div class="flex justify-between items-start">
+              <div class="flex items-center gap-2">
+                @if (game.badge) {
+                  <span class="glass-subtle px-2 py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full text-white">
+                    {{ game.badge }}
+                  </span>
+                } @else if (!game.available) {
+                  <span class="glass-subtle px-2 py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full text-white/70">
+                    Soon
+                  </span>
+                }
+                <!-- Favorite Heart Button -->
+                <button
+                  (click)="toggleFavorite(game.id, $event)"
+                  class="w-8 h-8 flex items-center justify-center rounded-full glass-subtle hover:bg-white/20 transition-all z-30"
+                  [class.text-pink-400]="isFavorite(game.id)"
+                  [class.text-white/50]="!isFavorite(game.id)"
+                >
+                  @if (isFavorite(game.id)) {
+                    <span class="text-lg">❤️</span>
+                  } @else {
+                    <span class="text-lg">🤍</span>
+                  }
+                </button>
+              </div>
+
+              <span class="text-3xl md:text-4xl lg:text-5xl drop-shadow-lg group-hover:scale-110 transition-transform duration-300" [class.grayscale]="!game.available" [class.opacity-50]="!game.available">
+                {{ game.icon }}
+              </span>
+            </div>
+
+            <!-- Bottom: Title & Info -->
+            <div class="text-left">
+              <h3 class="text-lg md:text-xl lg:text-2xl font-bold text-white mb-1 group-hover:translate-x-1 transition-transform duration-300 drop-shadow-md">
+                {{ game.name }}
+              </h3>
+              <p class="text-white/70 text-xs md:text-sm line-clamp-2 mb-2" [class]="game.size === 'small' ? 'hidden md:block' : ''">
+                {{ game.description }}
+              </p>
+              <div class="flex items-center gap-2 text-white/50 text-xs">
+                <svg class="w-3 h-3 md:w-4 md:h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/>
+                </svg>
+                <span>{{ game.players }} Spieler</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hover Glow -->
+          <div
+            class="absolute -inset-2 opacity-0 group-hover:opacity-60 transition-opacity duration-500 blur-2xl -z-10 rounded-3xl"
+            [class.bg-red-500]="game.gradient.includes('red')"
+            [class.bg-blue-500]="game.gradient.includes('blue')"
+            [class.bg-pink-500]="game.gradient.includes('pink')"
+            [class.bg-violet-500]="game.gradient.includes('violet')"
+            [class.bg-emerald-500]="game.gradient.includes('emerald')"
+            [class.bg-yellow-500]="game.gradient.includes('yellow')"
+            [class.bg-indigo-500]="game.gradient.includes('indigo')"
+            [class.bg-cyan-500]="game.gradient.includes('cyan')"
+          ></div>
+        </button>
+      }
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-16 text-center">
+      <div class="glass inline-flex items-center gap-2 px-5 py-3 rounded-full">
+        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></span>
+        <span class="text-white/60 text-sm">Mehr Spiele kommen bald</span>
+      </div>
+      <div class="text-white/30 text-xs mt-6 space-y-1">
+        <div>v{{ version }}</div>
+        <div>Made with 💙 by <a href="https://blubber-lounge.de/" target="_blank" rel="noopener" class="hover:text-white/50 transition-colors">Blubber Lounge</a></div>
+        <div>© 2026 All Rights Reserved</div>
+      </div>
+    </footer>
+  </div>
+</div>

@@ -1,0 +1,471 @@
+<div class="min-h-screen p-3 sm:p-4"
+     [class]="phase() === 'setup' ? 'bg-animated-gradient' : 'animated-gradient-bg'">
+  <!-- Animated Background Orbs (only on setup) -->
+  @if (phase() === 'setup') {
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-indigo-600/15 to-transparent rounded-full blur-3xl animate-blob"></div>
+      <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-blue-600/15 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="relative z-10 flex items-center justify-between mb-4 sm:mb-6">
+    <button (click)="goHome()" class="glass-button p-2 rounded-xl text-white/70 hover:text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <h1 class="text-xl sm:text-2xl font-display font-bold text-white drop-shadow-lg">Montagsmaler</h1>
+    <div class="w-8 sm:w-10"></div>
+  </div>
+
+  <!-- SETUP PHASE -->
+  @if (phase() === 'setup') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Players Card -->
+      <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden relative">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">🎨</span>
+            <span class="text-white font-semibold flex-1">Spieler</span>
+            <span class="text-white/60">{{ players().length }}</span>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              [(ngModel)]="newPlayerName"
+              (keyup.enter)="addPlayer()"
+              placeholder="Name hinzufügen..."
+              class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
+            />
+            <button
+              (click)="addPlayer()"
+              class="shrink-0 glass-button bg-indigo-500/80 hover:bg-indigo-500 text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          @if (players().length > 0) {
+            <div class="mt-3 space-y-1.5">
+              @for (player of players(); track player.id) {
+                <div class="flex items-center justify-between glass-subtle rounded-lg px-3 py-2">
+                  <span class="text-white text-sm">{{ player.name }}</span>
+                  <button (click)="removePlayer(player.id)" class="text-red-400 hover:text-red-300 transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          @if (players().length < 2) {
+            <p class="text-white/40 text-xs mt-2">Mindestens 2 Spieler benötigt</p>
+          }
+        </div>
+
+        <!-- Round Time -->
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-2xl">⏱️</span>
+            <span class="text-white font-semibold flex-1">Zeichenzeit</span>
+          </div>
+          <div class="flex justify-center gap-2 flex-wrap">
+            @for (time of [30, 45, 60, 90, 120]; track time) {
+              <button
+                (click)="roundTime.set(time)"
+                [class]="roundTime() === time
+                  ? 'bg-gradient-to-r from-indigo-500 to-blue-500 shadow-lg shadow-indigo-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="w-12 h-12 rounded-xl font-bold transition-all text-sm text-white"
+              >
+                {{ time }}s
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Category Selection -->
+        <div class="relative z-10 p-4 sm:p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">📂</span>
+            <span class="text-white font-semibold flex-1">Kategorie</span>
+          </div>
+          <input
+            type="text"
+            [value]="categorySearch()"
+            (input)="categorySearch.set($any($event.target).value)"
+            placeholder="Kategorie suchen..."
+            class="glass-input w-full rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm mb-3"
+          />
+          <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+            <button
+              (click)="selectedCategory.set('')"
+              [class]="selectedCategory() === ''
+                ? 'bg-gradient-to-r from-indigo-500 to-blue-500'
+                : 'glass-subtle text-white/60 hover:text-white'"
+              class="px-3 py-1.5 rounded-lg text-sm text-white transition-all"
+            >
+              Alle
+            </button>
+            @for (category of categories(); track category) {
+              <button
+                (click)="selectedCategory.set(category)"
+                [class]="selectedCategory() === category
+                  ? 'bg-gradient-to-r from-indigo-500 to-blue-500'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="px-3 py-1.5 rounded-lg text-sm text-white transition-all"
+              >
+                {{ category }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button
+        (click)="startGame()"
+        [disabled]="!canStartGame()"
+        [class]="canStartGame()
+          ? 'bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 shadow-lg shadow-indigo-500/30'
+          : 'glass-subtle cursor-not-allowed text-white/40'"
+        class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
+      >
+        Spiel starten
+      </button>
+
+      <!-- Instructions -->
+      <div class="glass-subtle rounded-2xl p-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 flex items-center gap-2 mb-2">
+          <span class="text-lg">📖</span>
+          <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
+        </div>
+        <div class="relative z-10 text-white/50 text-xs space-y-1">
+          <p>🎨 Ein Spieler zeichnet einen Begriff</p>
+          <p>📱 Das Handy wird danach herumgegeben</p>
+          <p>✍️ Jeder gibt seinen Tipp ab</p>
+          <p>✅ Der Zeichner wertet die Tipps aus</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- READY PHASE -->
+  @if (phase() === 'ready') {
+    <div class="relative z-10 max-w-md mx-auto flex flex-col items-center justify-center min-h-[70vh]">
+      <div class="glass-strong rounded-2xl p-8 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10">
+          <div class="text-6xl mb-4">🎨</div>
+          <h2 class="text-2xl font-display font-bold text-white mb-2">{{ currentDrawer()?.name }} zeichnet!</h2>
+          <p class="text-white/60 mb-6">Gib das Handy an {{ currentDrawer()?.name }}</p>
+
+          <button
+            (click)="startRound()"
+            class="w-full bg-gradient-to-r from-indigo-500 to-blue-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all"
+          >
+            Wort zeigen & Starten
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- DRAWING PHASE -->
+  @if (phase() === 'drawing') {
+    <div class="relative z-10 flex flex-col h-[calc(100vh-100px)]">
+      <!-- Timer and Word -->
+      <div class="flex items-center justify-between mb-3">
+        <div class="glass-strong px-4 py-2 rounded-xl">
+          <span class="text-white font-bold">{{ currentDrawer()?.name }}</span>
+        </div>
+        <div
+          [class]="timeLeft() <= 10 ? 'glass-gradient-red animate-pulse' : 'glass-strong'"
+          class="px-4 py-2 rounded-xl"
+        >
+          <span class="text-white font-bold text-xl">{{ formatTime(timeLeft()) }}</span>
+        </div>
+      </div>
+
+      <!-- Word Display -->
+      <div class="glass-strong rounded-xl p-3 mb-3 text-center">
+        <p class="text-white/50 text-xs mb-1">Zeichne:</p>
+        <p class="text-white font-bold text-2xl">{{ currentWord() }}</p>
+      </div>
+
+      <!-- Drawing Canvas -->
+      <div class="flex-1 relative rounded-2xl overflow-hidden border-2 border-white/20">
+        <canvas
+          #drawingCanvas
+          class="w-full h-full touch-none"
+          (mousedown)="startDrawing($event)"
+          (mousemove)="draw($event)"
+          (mouseup)="stopDrawing()"
+          (mouseleave)="stopDrawing()"
+          (touchstart)="startDrawing($event)"
+          (touchmove)="draw($event)"
+          (touchend)="stopDrawing()"
+        ></canvas>
+      </div>
+
+      <!-- Drawing Tools -->
+      <div class="mt-3 glass-strong rounded-xl p-3">
+        <div class="flex items-center justify-between gap-2">
+          <!-- Colors -->
+          <div class="flex gap-1 flex-wrap">
+            @for (color of colors; track color) {
+              <button
+                (click)="setColor(color)"
+                [style.background-color]="color"
+                [class]="currentColor() === color ? 'ring-2 ring-white scale-110' : ''"
+                class="w-7 h-7 rounded-full transition-all"
+              ></button>
+            }
+          </div>
+
+          <!-- Brush Size -->
+          <div class="flex gap-1">
+            @for (size of brushSizes; track size) {
+              <button
+                (click)="setBrushSize(size)"
+                [class]="brushSize() === size ? 'bg-white/30' : 'bg-white/10'"
+                class="w-8 h-8 rounded-lg flex items-center justify-center transition-all"
+              >
+                <div
+                  class="rounded-full bg-white"
+                  [style.width.px]="size"
+                  [style.height.px]="size"
+                ></div>
+              </button>
+            }
+          </div>
+
+          <!-- Clear -->
+          <button
+            (click)="clearCanvas()"
+            class="glass-button px-3 py-2 rounded-lg text-white/70 hover:text-white"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Finish Drawing Button -->
+      <button
+        (click)="finishDrawing()"
+        class="mt-3 w-full bg-gradient-to-r from-emerald-500 to-green-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-emerald-500/30 hover:opacity-90 transition-all"
+      >
+        ✓ Fertig gezeichnet
+      </button>
+    </div>
+  }
+
+  <!-- PASSING PHASE -->
+  @if (phase() === 'passing') {
+    <div class="relative z-10 max-w-md mx-auto flex flex-col items-center justify-center min-h-[70vh]">
+      <div class="glass-strong rounded-2xl p-8 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10">
+          @if (allGuessesCollected()) {
+            <!-- All guesses collected, pass back to drawer -->
+            <div class="text-6xl mb-4">📋</div>
+            <h2 class="text-2xl font-display font-bold text-white mb-2">Alle haben getippt!</h2>
+            <p class="text-white/60 mb-6">Gib das Handy zurück an {{ currentDrawer()?.name }}</p>
+
+            <button
+              (click)="phase.set('evaluation')"
+              class="w-full bg-gradient-to-r from-indigo-500 to-blue-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all"
+            >
+              Zur Auswertung
+            </button>
+          } @else {
+            <!-- Pass to next guesser -->
+            <div class="text-6xl mb-4">📱</div>
+            <h2 class="text-2xl font-display font-bold text-white mb-2">Handy weitergeben!</h2>
+            <p class="text-white/60 mb-2">Gib das Handy an:</p>
+            <p class="text-3xl font-bold text-white mb-6">{{ currentGuesser()?.name }}</p>
+
+            <p class="text-white/40 text-sm mb-4">
+              {{ currentGuesserIndex() + 1 }} von {{ guessers().length }} Spielern
+            </p>
+
+            <button
+              (click)="startGuessing()"
+              class="w-full bg-gradient-to-r from-indigo-500 to-blue-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all"
+            >
+              Bereit zum Raten
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- GUESSING PHASE -->
+  @if (phase() === 'guessing') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Current Guesser Info -->
+      <div class="glass-strong rounded-xl p-3 mb-4 text-center">
+        <p class="text-white/50 text-xs mb-1">Du bist dran:</p>
+        <p class="text-white font-bold text-xl">{{ currentGuesser()?.name }}</p>
+      </div>
+
+      <!-- Drawing Image -->
+      <div class="rounded-2xl overflow-hidden border-2 border-white/20 mb-4 aspect-square">
+        <img
+          [src]="drawingImageData()"
+          alt="Zeichnung"
+          class="w-full h-full object-contain bg-[#1a1a2e]"
+        />
+      </div>
+
+      <!-- Guess Input -->
+      <div class="glass-strong rounded-xl p-4 mb-4">
+        <p class="text-white/60 text-sm mb-2">Was wurde gezeichnet?</p>
+        <input
+          type="text"
+          [(ngModel)]="currentGuessInput"
+          (keyup.enter)="submitGuess()"
+          placeholder="Dein Tipp..."
+          class="w-full glass-subtle rounded-xl px-4 py-3 text-white text-lg placeholder-white/40 focus:outline-none"
+          autofocus
+        />
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        (click)="submitGuess()"
+        [disabled]="!currentGuessInput.trim()"
+        class="w-full bg-gradient-to-r from-emerald-500 to-green-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-emerald-500/30 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Tipp abgeben
+      </button>
+    </div>
+  }
+
+  <!-- EVALUATION PHASE -->
+  @if (phase() === 'evaluation') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Header -->
+      <div class="glass-strong rounded-xl p-4 mb-4 text-center">
+        <p class="text-white/50 text-sm mb-1">Das Wort war:</p>
+        <p class="text-white font-bold text-3xl">{{ currentWord() }}</p>
+      </div>
+
+      <!-- Drawing Preview -->
+      <div class="rounded-2xl overflow-hidden border-2 border-white/20 mb-4 aspect-video">
+        <img
+          [src]="drawingImageData()"
+          alt="Zeichnung"
+          class="w-full h-full object-contain bg-[#1a1a2e]"
+        />
+      </div>
+
+      <!-- Guesses to Evaluate -->
+      <div class="glass-strong rounded-xl p-4 mb-4">
+        <p class="text-white font-bold mb-3">Bewerte die Tipps:</p>
+        <div class="space-y-3">
+          @for (guess of guesses(); track guess.playerId; let i = $index) {
+            <div class="glass-subtle rounded-xl p-3">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-white/70 text-sm">{{ guess.playerName }}:</span>
+                <span class="text-white font-bold">{{ guess.guess }}</span>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  (click)="markGuess(i, true)"
+                  [class]="guess.isCorrect === true ? 'bg-emerald-500' : 'glass-subtle'"
+                  class="flex-1 py-2 rounded-lg text-white font-semibold transition-all"
+                >
+                  ✓ Richtig
+                </button>
+                <button
+                  (click)="markGuess(i, false)"
+                  [class]="guess.isCorrect === false ? 'bg-red-500' : 'glass-subtle'"
+                  class="flex-1 py-2 rounded-lg text-white font-semibold transition-all"
+                >
+                  ✗ Falsch
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="glass-subtle rounded-xl p-3 mb-4 text-center">
+        <span class="text-white/60">Richtige Tipps: </span>
+        <span class="text-emerald-400 font-bold">{{ correctGuessCount() }}</span>
+        <span class="text-white/60"> von {{ guesses().length }}</span>
+      </div>
+
+      <!-- Finish Button -->
+      <button
+        (click)="finishEvaluation()"
+        [disabled]="!allGuessesEvaluated()"
+        class="w-full bg-gradient-to-r from-indigo-500 to-blue-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        @if (allGuessesEvaluated()) {
+          Weiter
+        } @else {
+          Bitte alle Tipps bewerten
+        }
+      </button>
+    </div>
+  }
+
+  <!-- SCORES PHASE -->
+  @if (phase() === 'scores') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <div class="glass-strong rounded-2xl p-6 mb-6 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10">
+          <div class="text-6xl mb-4">🏆</div>
+          <h2 class="text-3xl font-display font-bold text-white mb-6">Endergebnis</h2>
+
+          <div class="space-y-3">
+            @for (player of getSortedPlayers(); track player.id; let i = $index) {
+              <div
+                [class]="i === 0 ? 'bg-gradient-to-r from-yellow-500/30 to-amber-500/30 border-yellow-500/50' : 'glass-subtle'"
+                class="flex items-center justify-between p-4 rounded-xl border border-white/10"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="text-2xl">
+                    @if (i === 0) { 🥇 }
+                    @else if (i === 1) { 🥈 }
+                    @else if (i === 2) { 🥉 }
+                    @else { {{ i + 1 }}. }
+                  </span>
+                  <span class="text-white font-semibold">{{ player.name }}</span>
+                </div>
+                <span class="text-white font-bold text-xl">{{ player.score || 0 }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <button
+          (click)="playAgain()"
+          class="flex-1 bg-gradient-to-r from-indigo-500 to-blue-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-indigo-500/30 hover:opacity-90 transition-all"
+        >
+          Nochmal
+        </button>
+        <button
+          (click)="goHome()"
+          class="flex-1 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          Menü
+        </button>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,375 @@
+<div class="min-h-screen p-3 sm:p-4"
+     [class]="phase() === 'setup' ? 'bg-animated-gradient' : 'animated-gradient-bg'">
+  <!-- Animated Background Orbs (only on setup) -->
+  @if (phase() === 'setup') {
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-pink-600/15 to-transparent rounded-full blur-3xl animate-blob"></div>
+      <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-rose-600/15 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="relative z-10 flex items-center justify-between mb-4 sm:mb-6">
+    <button (click)="goHome()" class="glass-button p-2 rounded-xl text-white/70 hover:text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <h1 class="text-xl sm:text-2xl font-display font-bold text-white drop-shadow-lg">Lippenlesen</h1>
+    <div class="w-8 sm:w-10"></div>
+  </div>
+
+  <!-- SETUP PHASE -->
+  @if (phase() === 'setup') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Card 1: Players & Category Settings -->
+      <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden relative">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <!-- Add Players Row -->
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">✋</span>
+            <span class="text-white font-semibold flex-1">Spieler</span>
+            <span class="text-white/60">{{ players().length }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              [(ngModel)]="newPlayerName"
+              (keyup.enter)="addPlayer()"
+              placeholder="Name hinzufügen..."
+              class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
+            />
+            <button
+              (click)="addPlayer()"
+              class="shrink-0 glass-button bg-blast-primary/80 hover:bg-blast-primary text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <!-- Player List -->
+          @if (players().length > 0) {
+            <div class="mt-3 space-y-1.5">
+              @for (player of players(); track player.id) {
+                <div class="flex items-center justify-between glass-subtle rounded-lg px-3 py-2">
+                  <span class="text-white text-sm">{{ player.name }}</span>
+                  <button (click)="removePlayer(player.id)" class="text-red-400 hover:text-red-300 transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          @if (players().length < 2) {
+            <p class="text-white/40 text-xs mt-2">Mindestens 2 Spieler benötigt</p>
+          }
+        </div>
+
+        <!-- Category Row -->
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">📚</span>
+            <span class="text-white font-semibold flex-1">Kategorie</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 sm:gap-2">
+            @for (category of categories; track category) {
+              <button
+                (click)="selectedCategory.set(category)"
+                [class]="selectedCategory() === category
+                  ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all"
+              >
+                {{ category }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Rounds Per Player Row -->
+        <div class="relative z-10 p-4 sm:p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">🔄</span>
+            <span class="text-white font-semibold flex-1">Runden pro Spieler</span>
+          </div>
+          <div class="flex justify-center gap-1.5 sm:gap-2">
+            @for (count of [1, 2, 3, 4, 5]; track count) {
+              <button
+                (click)="totalRounds.set(count)"
+                [class]="totalRounds() === count
+                  ? 'bg-pink-500 text-white shadow-lg shadow-pink-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl font-bold transition-all text-base sm:text-lg"
+              >
+                {{ count }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Timer Settings -->
+      <div class="glass rounded-2xl mb-6 overflow-hidden relative">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <!-- Time Duration Row -->
+        <div class="relative z-10 p-4 sm:p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-2xl">⏱️</span>
+            <span class="text-white font-semibold flex-1">Zeit pro Runde</span>
+          </div>
+          <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
+            @for (time of [15, 20, 30, 45, 60]; track time) {
+              <button
+                (click)="roundTime.set(time)"
+                [class]="roundTime() === time
+                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 shadow-lg shadow-pink-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="h-11 sm:h-12 rounded-xl font-bold transition-all text-xs sm:text-sm text-white"
+              >
+                {{ time }}s
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button
+        (click)="startGame()"
+        [disabled]="!canStartGame()"
+        [class]="canStartGame()
+          ? 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-lg shadow-pink-500/30'
+          : 'glass-subtle cursor-not-allowed text-white/40'"
+        class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
+      >
+        Spiel starten
+      </button>
+
+      <!-- Instructions (at bottom) -->
+      <div class="glass-subtle rounded-2xl p-4 relative overflow-hidden">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 flex items-center gap-2 mb-2">
+          <span class="text-lg">📖</span>
+          <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
+        </div>
+        <div class="relative z-10 text-white/50 text-xs space-y-1">
+          <p>👄 Ein Spieler sagt ein Wort - aber ohne Ton!</p>
+          <p>👀 Die anderen versuchen, das Wort zu erraten</p>
+          <p>⏱️ Ihr habt nur begrenzte Zeit zum Raten</p>
+          <p>🏆 Punkte gibt's für erfolgreiches Übermitteln</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- READY PHASE -->
+  @if (phase() === 'ready') {
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
+      <div class="glass-strong rounded-3xl p-8 text-center max-w-sm relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <!-- Round Info -->
+        <div class="relative z-10 glass-subtle inline-block px-4 py-2 rounded-full mb-6">
+          <span class="text-white/70 text-sm">Runde {{ currentRoundDisplay() }} von {{ totalRounds() }}</span>
+        </div>
+
+        <!-- Current Player -->
+        <div class="relative z-10 text-6xl mb-4">👄</div>
+        <h2 class="relative z-10 text-2xl font-bold text-white mb-2">{{ currentPlayer()?.name }}</h2>
+        <p class="relative z-10 text-white/60 mb-6">Du bist dran mit Lippenlesen!</p>
+
+        <p class="relative z-10 text-white/40 text-sm mb-6">
+          Drücke den Button, um dein Wort zu sehen.<br/>
+          Dann sage es lautlos - nur mit den Lippen!
+        </p>
+
+        <button
+          (click)="showWord()"
+          class="relative z-10 w-full bg-gradient-to-r from-pink-500 to-rose-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-pink-500/30 hover:opacity-90 transition-all"
+        >
+          Wort anzeigen
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- SPEAKING PHASE -->
+  @if (phase() === 'speaking') {
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
+      <div class="glass-strong rounded-3xl p-8 text-center max-w-sm relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <p class="relative z-10 text-white/60 text-sm mb-2">Dein Wort ist:</p>
+
+        <!-- The Word -->
+        <div class="relative z-10 glass-gradient-pink rounded-2xl p-6 mb-6">
+          <p class="text-4xl font-bold text-white drop-shadow-lg">{{ currentWord() }}</p>
+        </div>
+
+        <p class="relative z-10 text-white/40 text-sm mb-6">
+          Merke dir das Wort!<br/>
+          Wenn alle bereit sind, starte die Runde.
+        </p>
+
+        <button
+          (click)="startGuessing()"
+          class="relative z-10 w-full bg-gradient-to-r from-pink-500 to-rose-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-pink-500/30 hover:opacity-90 transition-all"
+        >
+          Runde starten
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- GUESSING PHASE -->
+  @if (phase() === 'guessing') {
+    <div class="relative z-10 max-w-md mx-auto flex flex-col items-center justify-center min-h-[80vh]">
+      <!-- Speaker Info -->
+      <div class="text-center mb-6">
+        <div class="text-5xl mb-2">👄</div>
+        <h2 class="text-2xl font-bold text-white mb-1">{{ currentPlayer()?.name }} spricht</h2>
+        <p class="text-white/60">Ohne Ton - nur Lippen bewegen!</p>
+      </div>
+
+      <!-- Timer -->
+      <div
+        [class]="timeLeft() <= 10 ? 'glass-gradient-red animate-pulse' : 'glass-strong'"
+        class="rounded-3xl p-8 mb-6 transition-colors relative overflow-hidden"
+      >
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 text-7xl font-bold text-white font-display drop-shadow-lg">
+          {{ formatTime(timeLeft()) }}
+        </div>
+      </div>
+
+      <!-- Word Reminder (for speaker) -->
+      <div class="glass-subtle rounded-xl px-4 py-2 mb-6">
+        <p class="text-white/50 text-sm">Dein Wort: <span class="text-white font-bold">{{ currentWord() }}</span></p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-4 w-full">
+        <button
+          (click)="correctGuess()"
+          class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-green-500/30 hover:opacity-90 transition-all"
+        >
+          Erraten!
+        </button>
+        <button
+          (click)="skipWord()"
+          class="flex-1 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          Nicht erraten
+        </button>
+      </div>
+
+      <!-- Pause Button -->
+      <button
+        (click)="togglePauseTimer()"
+        class="mt-4 glass-subtle px-6 py-2 rounded-full text-white/70 hover:text-white transition-all"
+      >
+        @if (timerPaused()) {
+          ▶ Fortsetzen
+        } @else {
+          ⏸ Pause
+        }
+      </button>
+    </div>
+  }
+
+  <!-- RESULT PHASE -->
+  @if (phase() === 'result') {
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
+      <div class="glass-strong rounded-3xl p-8 text-center max-w-sm relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <div class="relative z-10 text-6xl mb-4">{{ timeLeft() > 0 ? '🎉' : '⏰' }}</div>
+        <h2 class="relative z-10 text-2xl font-bold text-white mb-2">
+          {{ timeLeft() > 0 ? 'Super!' : 'Zeit ist um!' }}
+        </h2>
+
+        <p class="relative z-10 text-white/60 mb-4">Das Wort war:</p>
+        <div class="relative z-10 glass-gradient-pink rounded-xl px-6 py-4 mb-6">
+          <p class="text-3xl font-bold text-white">{{ currentWord() }}</p>
+        </div>
+
+        @if (timeLeft() > 0) {
+          <p class="relative z-10 text-white/60 mb-6">
+            {{ currentPlayer()?.name }} bekommt einen Punkt!
+          </p>
+        }
+
+        <button
+          (click)="nextRound()"
+          class="relative z-10 w-full bg-gradient-to-r from-pink-500 to-rose-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-pink-500/30 hover:opacity-90 transition-all"
+        >
+          {{ isLastRound() ? 'Ergebnisse anzeigen' : 'Nächste Runde' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- SCORES PHASE -->
+  @if (phase() === 'scores') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Header -->
+      <div class="glass-strong rounded-2xl p-8 mb-6 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 text-6xl mb-4">🏆</div>
+        <h2 class="relative z-10 text-3xl font-display font-bold text-white">Endergebnis</h2>
+      </div>
+
+      <!-- Scoreboard -->
+      <div class="glass-strong rounded-2xl p-6 mb-6 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <div class="relative z-10 space-y-3">
+          @for (player of sortedPlayers(); track player.id; let i = $index) {
+            <div
+              [class]="i === 0 ? 'glass-gradient-pink' : 'glass-subtle'"
+              class="flex items-center justify-between rounded-xl px-4 py-3"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">
+                  @if (i === 0) { 🥇 }
+                  @else if (i === 1) { 🥈 }
+                  @else if (i === 2) { 🥉 }
+                  @else { {{ i + 1 }}. }
+                </span>
+                <span class="text-white font-medium">{{ player.name }}</span>
+              </div>
+              <span class="text-white font-bold text-xl">{{ player.score }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-4">
+        <button
+          (click)="newGame()"
+          class="flex-1 bg-gradient-to-r from-pink-500 to-rose-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-pink-500/30 hover:opacity-90 transition-all"
+        >
+          Nochmal
+        </button>
+        <button
+          (click)="playAgain()"
+          class="flex-1 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          Neue Spieler
+        </button>
+      </div>
+    </div>
+  }
+</div>

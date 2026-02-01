@@ -1,0 +1,328 @@
+<div class="min-h-screen p-3 sm:p-4"
+     [class]="phase() === 'setup' ? 'bg-animated-gradient' : 'animated-gradient-bg'">
+  <!-- Animated Background Orbs (only on setup) -->
+  @if (phase() === 'setup') {
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-blue-600/15 to-transparent rounded-full blur-3xl animate-blob"></div>
+      <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-indigo-600/15 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="relative z-10 flex items-center justify-between mb-4 sm:mb-6">
+    <button (click)="goHome()" class="glass-button p-2 rounded-xl text-white/70 hover:text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <h1 class="text-xl sm:text-2xl font-display font-bold text-white drop-shadow-lg">Wörterkette</h1>
+    <div class="w-8 sm:w-10"></div>
+  </div>
+
+  <!-- SETUP PHASE -->
+  @if (phase() === 'setup') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Card 1: Players & Game Settings -->
+      <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden relative">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <!-- Add Players Row -->
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">✋</span>
+            <span class="text-white font-semibold flex-1">Spieler</span>
+            <span class="text-white/60">{{ players().length }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              [(ngModel)]="newPlayerName"
+              (keyup.enter)="addPlayer()"
+              placeholder="Name hinzufügen..."
+              class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
+            />
+            <button
+              (click)="addPlayer()"
+              class="shrink-0 glass-button bg-blast-primary/80 hover:bg-blast-primary text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <!-- Player List -->
+          @if (players().length > 0) {
+            <div class="mt-3 space-y-1.5">
+              @for (player of players(); track player.id) {
+                <div class="flex items-center justify-between glass-subtle rounded-lg px-3 py-2">
+                  <span class="text-white text-sm">{{ player.name }}</span>
+                  <button (click)="removePlayer(player.id)" class="text-red-400 hover:text-red-300 transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          @if (players().length < 2) {
+            <p class="text-white/40 text-xs mt-2">Mindestens 2 Spieler benötigt</p>
+          }
+        </div>
+
+        <!-- Max Strikes Row -->
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">❌</span>
+            <span class="text-white font-semibold flex-1">Fehlversuche</span>
+          </div>
+          <div class="flex justify-center gap-1.5 sm:gap-2">
+            @for (count of [1, 2, 3, 4, 5]; track count) {
+              <button
+                (click)="maxStrikes.set(count)"
+                [class]="maxStrikes() === count
+                  ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl font-bold transition-all text-base sm:text-lg"
+              >
+                {{ count }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Timer Settings -->
+      <div class="glass rounded-2xl mb-6 overflow-hidden relative">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <!-- Time Duration Row -->
+        <div class="relative z-10 p-4 sm:p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-2xl">⏱️</span>
+            <span class="text-white font-semibold flex-1">Zeit pro Zug</span>
+          </div>
+          <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            @for (time of [5, 10, 15, 20, 25, 30]; track time) {
+              <button
+                (click)="turnTime.set(time)"
+                [class]="turnTime() === time
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="h-11 sm:h-12 rounded-xl font-bold transition-all text-sm text-white"
+              >
+                {{ time }}s
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button
+        (click)="startGame()"
+        [disabled]="!canStartGame()"
+        [class]="canStartGame()
+          ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg shadow-blue-500/30'
+          : 'glass-subtle cursor-not-allowed text-white/40'"
+        class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
+      >
+        Spiel starten
+      </button>
+
+      <!-- Instructions (at bottom) -->
+      <div class="glass-subtle rounded-2xl p-4 relative overflow-hidden">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 flex items-center gap-2 mb-2">
+          <span class="text-lg">📖</span>
+          <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
+        </div>
+        <div class="relative z-10 text-white/50 text-xs space-y-1">
+          <p>🔤 Der erste Spieler nennt ein beliebiges Wort</p>
+          <p>🔗 Das nächste Wort muss mit dem letzten Buchstaben beginnen</p>
+          <p>⏱️ Du hast nur wenige Sekunden Zeit!</p>
+          <p>❌ Bei {{ maxStrikes() }} Fehlern bist du raus</p>
+          <p>🏆 Der letzte Spieler gewinnt!</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- PLAYING PHASE -->
+  @if (phase() === 'playing') {
+    <div class="relative z-10 max-w-md mx-auto flex flex-col items-center justify-center min-h-[85vh]">
+      <!-- Current Player -->
+      <div class="text-center mb-4">
+        <p class="text-white/60 text-sm mb-1">Am Zug:</p>
+        <h2 class="text-3xl font-bold text-white">{{ currentPlayer()?.name }}</h2>
+        <p class="text-white/50 text-sm mt-1">{{ getStrikeDisplay(currentPlayer()?.strikes || 0) }}</p>
+      </div>
+
+      <!-- Timer -->
+      <div
+        [class]="timeLeft() <= 3 ? 'glass-gradient-red animate-pulse' : 'glass-strong'"
+        class="rounded-full w-24 h-24 flex items-center justify-center mb-6 transition-colors relative overflow-hidden"
+      >
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <span class="relative z-10 text-4xl font-bold text-white">{{ timeLeft() }}</span>
+      </div>
+
+      <!-- Previous Word / Required Letter -->
+      @if (previousWord()) {
+        <div class="glass-strong rounded-2xl p-4 mb-4 text-center relative overflow-hidden w-full">
+          <div class="absolute inset-0 bg-gradient-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
+          <p class="relative z-10 text-white/60 text-sm mb-1">Letztes Wort:</p>
+          <p class="relative z-10 text-2xl font-bold text-white">{{ previousWord() }}</p>
+        </div>
+
+        <div class="glass-gradient-blue rounded-2xl p-4 mb-6 text-center relative overflow-hidden">
+          <p class="text-white/80 text-sm mb-1">Dein Wort muss beginnen mit:</p>
+          <p class="text-5xl font-bold text-white drop-shadow-lg">{{ requiredLetter().toUpperCase() }}</p>
+        </div>
+      } @else {
+        <div class="glass-strong rounded-2xl p-6 mb-6 text-center relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
+          <p class="relative z-10 text-white/60">Nenne ein beliebiges Wort!</p>
+        </div>
+      }
+
+      <!-- Word Input -->
+      <div class="w-full mb-4">
+        <input
+          type="text"
+          [(ngModel)]="wordInput"
+          (keyup.enter)="submitWord()"
+          placeholder="Wort eingeben..."
+          class="w-full glass-subtle rounded-xl px-4 py-4 text-white text-center text-xl placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          autofocus
+        />
+      </div>
+
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div class="glass-gradient-red rounded-xl px-4 py-2 mb-4">
+          <p class="text-white text-sm">{{ errorMessage() }}</p>
+        </div>
+      }
+
+      <!-- Action Buttons -->
+      <div class="flex gap-4 w-full">
+        <button
+          (click)="submitWord()"
+          class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-green-500/30 hover:opacity-90 transition-all"
+        >
+          Bestätigen
+        </button>
+        <button
+          (click)="skipTurn()"
+          class="flex-1 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          Passen
+        </button>
+      </div>
+
+      <!-- Players Status -->
+      <div class="mt-6 w-full">
+        <div class="flex flex-wrap gap-2 justify-center">
+          @for (player of players(); track player.id) {
+            <div
+              [class]="player.isOut ? 'opacity-40 line-through' : (player.id === currentPlayer()?.id ? 'ring-2 ring-blue-400' : '')"
+              class="glass-subtle px-3 py-1.5 rounded-full text-white text-sm"
+            >
+              {{ player.name }} {{ getStrikeDisplay(player.strikes) }}
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ELIMINATED PHASE -->
+  @if (phase() === 'eliminated') {
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
+      <div class="glass-strong rounded-3xl p-8 text-center max-w-sm relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <div class="relative z-10 text-6xl mb-4">💀</div>
+        <h2 class="relative z-10 text-2xl font-bold text-white mb-2">Ausgeschieden!</h2>
+        <p class="relative z-10 text-3xl font-bold text-red-400 mb-4">{{ lastEliminatedPlayer()?.name }}</p>
+        <p class="relative z-10 text-white/60 mb-6">
+          {{ activePlayers().length }} Spieler übrig
+        </p>
+
+        <button
+          (click)="continueAfterElimination()"
+          class="relative z-10 w-full bg-gradient-to-r from-blue-500 to-indigo-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blue-500/30 hover:opacity-90 transition-all"
+        >
+          Weiter spielen
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- WINNER PHASE -->
+  @if (phase() === 'winner') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Header -->
+      <div class="glass-strong rounded-2xl p-8 mb-6 text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 text-6xl mb-4">🏆</div>
+        <h2 class="relative z-10 text-xl text-white/60 mb-2">Gewinner!</h2>
+        <p class="relative z-10 text-4xl font-display font-bold text-white">{{ winner()?.name }}</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="glass-strong rounded-2xl p-6 mb-6 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <h3 class="relative z-10 text-lg font-bold text-white mb-4">Statistik</h3>
+        <div class="relative z-10 space-y-2">
+          <div class="flex justify-between text-white/70">
+            <span>Wörter gespielt:</span>
+            <span class="text-white font-bold">{{ usedWordsCount() }}</span>
+          </div>
+          <div class="flex justify-between text-white/70">
+            <span>Spieler:</span>
+            <span class="text-white font-bold">{{ players().length }}</span>
+          </div>
+        </div>
+
+        <!-- Used Words Preview -->
+        @if (usedWordsCount() > 0) {
+          <div class="relative z-10 mt-4 pt-4 border-t border-white/10">
+            <p class="text-white/50 text-sm mb-2">Benutzte Wörter:</p>
+            <div class="flex flex-wrap gap-1">
+              @for (word of usedWordsPreview(); track word) {
+                <span class="glass-subtle px-2 py-1 rounded text-white/70 text-xs">{{ word }}</span>
+              }
+              @if (hasMoreWords()) {
+                <span class="text-white/40 text-xs">+{{ extraWordsCount() }} mehr</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-4">
+        <button
+          (click)="newGame()"
+          class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blue-500/30 hover:opacity-90 transition-all"
+        >
+          Nochmal
+        </button>
+        <button
+          (click)="playAgain()"
+          class="flex-1 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          Neue Spieler
+        </button>
+      </div>
+    </div>
+  }
+</div>

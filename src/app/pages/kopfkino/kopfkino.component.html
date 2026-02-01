@@ -1,0 +1,300 @@
+<div class="min-h-screen bg-animated-gradient p-3 sm:p-4">
+  <!-- Animated Background Orbs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-blue-600/15 to-transparent rounded-full blur-3xl animate-blob"></div>
+    <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-cyan-600/15 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+  </div>
+
+  <!-- Header (not in playing mode) -->
+  @if (phase() !== 'playing') {
+    <div class="relative z-10 flex items-center justify-between mb-4 sm:mb-6">
+      <button (click)="goHome()" class="glass-button p-2 rounded-xl text-white/70 hover:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      <h1 class="text-xl sm:text-2xl font-display font-bold text-white drop-shadow-lg">Kopfkino</h1>
+      <div class="w-8 sm:w-10"></div>
+    </div>
+  }
+
+  <!-- SETUP PHASE -->
+  @if (phase() === 'setup') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Card 1: Players & Time Settings -->
+      <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden">
+        <!-- Players Row -->
+        <div class="p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">👥</span>
+            <span class="text-white font-semibold flex-1">Spieler</span>
+            <span class="text-white/60">{{ players().length }}</span>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              [(ngModel)]="newPlayerName"
+              (keyup.enter)="addPlayer()"
+              placeholder="Name hinzufügen..."
+              class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
+            />
+            <button
+              (click)="addPlayer()"
+              class="shrink-0 glass-button bg-blast-primary/80 hover:bg-blast-primary text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <!-- Player List -->
+          @if (players().length > 0) {
+            <div class="mt-3 space-y-1.5">
+              @for (player of players(); track player.id) {
+                <div class="flex items-center justify-between glass-subtle rounded-lg px-3 py-2">
+                  <span class="text-white text-sm">{{ player.name }}</span>
+                  <div class="flex items-center gap-2">
+                    <span class="text-blast-primary font-bold text-sm">{{ player.score || 0 }} Pkt</span>
+                    <button (click)="removePlayer(player.id)" class="text-red-400 hover:text-red-300 transition-colors p-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Round Time Row -->
+        <div class="p-4 sm:p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">⏱️</span>
+              <span class="text-white font-semibold">Rundenzeit</span>
+            </div>
+            <div class="flex gap-2 sm:ml-auto">
+              @for (time of [30, 45, 60, 90]; track time) {
+                <button
+                  (click)="roundTime.set(time)"
+                  [class]="roundTime() === time
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+                    : 'glass-subtle text-white/60 hover:text-white'"
+                  class="w-10 h-10 rounded-xl font-bold transition-all text-sm"
+                >
+                  {{ time }}
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Category Selection with Search -->
+      <div class="glass rounded-2xl p-4 sm:p-5 mb-6">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-2xl">🎯</span>
+          <span class="text-white font-semibold flex-1">Kategorie</span>
+          @if (selectedCategory()) {
+            <span class="text-blast-primary text-sm font-medium">{{ selectedCategory() }}</span>
+          }
+        </div>
+
+        <!-- Category Search -->
+        <div class="relative mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            type="text"
+            [ngModel]="categorySearch()"
+            (ngModelChange)="categorySearch.set($event)"
+            placeholder="Kategorie suchen..."
+            class="glass-input w-full rounded-xl pl-9 pr-3 py-2 text-white placeholder-white/40 focus:outline-none text-sm"
+          />
+        </div>
+
+        <!-- Category Grid -->
+        <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+          @if (!categorySearch()) {
+            <button
+              (click)="selectedCategory.set('')"
+              [class]="selectedCategory() === '' ? 'bg-gradient-to-r from-blast-primary to-blast-secondary shadow-lg shadow-blast-primary/30' : 'glass-subtle text-white/70 hover:text-white'"
+              class="py-2.5 px-3 rounded-xl font-semibold transition-all text-sm text-white"
+            >
+              🎲 Alle
+            </button>
+          }
+          @for (category of categories(); track category) {
+            <button
+              (click)="selectedCategory.set(category)"
+              [class]="selectedCategory() === category ? 'bg-gradient-to-r from-blast-primary to-blast-secondary shadow-lg shadow-blast-primary/30' : 'glass-subtle text-white/70 hover:text-white'"
+              class="py-2.5 px-3 rounded-xl font-semibold transition-all text-sm text-white text-left"
+            >
+              {{ category }}
+            </button>
+          }
+          @if (categories().length === 0 && categorySearch()) {
+            <p class="col-span-2 text-white/40 text-sm text-center py-2">Keine Kategorie gefunden</p>
+          }
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button
+        (click)="startGame()"
+        [disabled]="!canStartGame()"
+        [class]="canStartGame()
+          ? 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg shadow-blue-500/30'
+          : 'glass-subtle cursor-not-allowed text-white/40'"
+        class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
+      >
+        Spiel starten
+      </button>
+
+      <!-- Instructions (at bottom) -->
+      <div class="glass-subtle rounded-2xl p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-lg">📖</span>
+          <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
+        </div>
+        <div class="text-white/50 text-xs space-y-1">
+          <p>📱 Halte das Handy an deine Stirn</p>
+          <p>🗣️ Andere beschreiben das Wort</p>
+          <p><span class="text-green-400">↓ Vorne kippen</span> = Richtig</p>
+          <p><span class="text-red-400">↑ Hinten kippen</span> = Überspringen</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- READY PHASE -->
+  @if (phase() === 'ready') {
+    <div class="relative z-10 max-w-md mx-auto text-center">
+      <div class="glass-strong rounded-2xl p-8">
+        <p class="text-white/60 mb-2">Nächster Spieler:</p>
+        <h2 class="text-4xl font-display font-bold text-white mb-6 drop-shadow-lg">{{ currentPlayer()?.name }}</h2>
+
+        <div class="glass-subtle rounded-xl p-4 mb-8">
+          <p class="text-white/70">Halte das Handy an deine Stirn!</p>
+          <p class="text-white/50 text-sm mt-2">Kippe vor = Richtig, zurück = Überspringen</p>
+        </div>
+
+        <button
+          (click)="prepareRound()"
+          class="w-full bg-gradient-to-r from-green-500 to-emerald-500 py-4 rounded-2xl text-white font-bold text-xl hover:opacity-90 transition-all shadow-lg shadow-green-500/30"
+        >
+          Bereit!
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- PLAYING PHASE -->
+  @if (phase() === 'playing') {
+    <div
+      [class]="{
+        'bg-gradient-to-br from-green-500 to-emerald-600': lastTilt() === 'correct',
+        'bg-gradient-to-br from-red-500 to-rose-600': lastTilt() === 'skip',
+        'bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700': lastTilt() === ''
+      }"
+      class="fixed inset-0 flex flex-col items-center justify-center transition-colors duration-300"
+    >
+      <!-- Timer -->
+      <div class="absolute top-4 left-1/2 -translate-x-1/2">
+        <div
+          [class]="timeLeft() <= 10 ? 'text-red-300 animate-pulse' : 'text-white/80'"
+          class="text-4xl font-bold drop-shadow-lg"
+        >
+          {{ timeLeft() }}
+        </div>
+      </div>
+
+      <!-- Score -->
+      <div class="absolute top-4 right-4 glass rounded-xl px-4 py-2">
+        <span class="text-green-300 font-bold">{{ wordsGuessed() }}</span> <span class="text-white/60">✓</span>
+        <span class="text-red-300 font-bold ml-3">{{ wordsSkipped() }}</span> <span class="text-white/60">✗</span>
+      </div>
+
+      <!-- Word Display -->
+      <div class="text-center px-8">
+        <h1 class="text-5xl md:text-7xl font-display font-extrabold text-white leading-tight drop-shadow-xl">
+          {{ currentWord() }}
+        </h1>
+      </div>
+
+      <!-- Manual Controls (for desktop testing) -->
+      <div class="absolute bottom-8 flex gap-4">
+        <button
+          (click)="onSkip()"
+          class="glass-gradient-red hover:opacity-90 text-white px-8 py-4 rounded-2xl font-bold text-xl transition-all"
+        >
+          ✗ Skip
+        </button>
+        <button
+          (click)="onCorrect()"
+          class="glass-gradient-green hover:opacity-90 text-white px-8 py-4 rounded-2xl font-bold text-xl transition-all"
+        >
+          ✓ Richtig
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- RESULT PHASE -->
+  @if (phase() === 'result') {
+    <div class="relative z-10 max-w-md mx-auto text-center">
+      <div class="glass-gradient-purple rounded-2xl p-8 mb-6">
+        <h2 class="text-3xl font-display font-bold text-white mb-2 drop-shadow-lg">Zeit vorbei!</h2>
+        <p class="text-white/70">{{ currentPlayer()?.name }}</p>
+      </div>
+
+      <div class="glass-strong rounded-2xl p-6 mb-6">
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="glass-gradient-green rounded-xl p-4">
+            <div class="text-4xl font-bold text-green-300 drop-shadow-md">{{ wordsGuessed() }}</div>
+            <div class="text-white/60">Richtig</div>
+          </div>
+          <div class="glass-gradient-red rounded-xl p-4">
+            <div class="text-4xl font-bold text-red-300 drop-shadow-md">{{ wordsSkipped() }}</div>
+            <div class="text-white/60">Übersprungen</div>
+          </div>
+        </div>
+
+        <!-- Current Standings -->
+        <h3 class="text-lg font-bold text-white mb-3 drop-shadow-md">Punktestand</h3>
+        <div class="space-y-2">
+          @for (player of getSortedPlayers(); track player.id; let i = $index) {
+            <div
+              [class]="i === 0 ? 'bg-gradient-to-r from-yellow-500/30 to-amber-500/20 border border-yellow-500/30' : 'glass-subtle'"
+              class="flex items-center justify-between rounded-xl px-4 py-3"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '' }}</span>
+                <span class="text-white">{{ player.name }}</span>
+              </div>
+              <span class="bg-gradient-to-r from-blast-primary to-blast-secondary bg-clip-text text-transparent font-bold text-xl">{{ player.score || 0 }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-4">
+        <button
+          (click)="nextPlayer()"
+          class="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blue-500/30 hover:opacity-90 transition-all"
+        >
+          {{ isLastPlayer() ? 'Fertig' : 'Nächster' }}
+        </button>
+        <button
+          (click)="goHome()"
+          class="glass-button py-4 px-6 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          Menü
+        </button>
+      </div>
+    </div>
+  }
+</div>

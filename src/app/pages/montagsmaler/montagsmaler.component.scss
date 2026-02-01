@@ -1,0 +1,37 @@
+// Montagsmaler specific styles
+
+:host {
+  display: block;
+}
+
+// Animated moving gradient background - dark theme
+.animated-gradient-bg {
+  background: linear-gradient(
+    -45deg,
+    #1a1a2e,
+    #16213e,
+    #0f3460,
+    #1a1a2e,
+    #1e3a5f,
+    #1a1a2e
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+// Canvas styling
+canvas {
+  cursor: crosshair;
+}

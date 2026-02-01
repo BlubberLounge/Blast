@@ -1,0 +1,391 @@
+<div class="min-h-screen p-3 sm:p-4"
+     [class]="phase() === 'setup' ? 'bg-animated-gradient' : 'animated-gradient-bg'">
+  <!-- Animated Background Orbs (only on setup) -->
+  @if (phase() === 'setup') {
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-red-600/15 to-transparent rounded-full blur-3xl animate-blob"></div>
+      <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-orange-600/15 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="relative z-10 flex items-center justify-between mb-4 sm:mb-6">
+    <button (click)="goHome()" class="glass-button p-2 rounded-xl text-white/70 hover:text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <h1 class="text-xl sm:text-2xl font-display font-bold text-white drop-shadow-lg">Undercover</h1>
+    <div class="w-8 sm:w-10"></div>
+  </div>
+
+  <!-- SETUP PHASE -->
+  @if (phase() === 'setup') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Card 1: Players & Imposter Settings -->
+      <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden relative">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <!-- Add Players Row -->
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">✋</span>
+            <span class="text-white font-semibold flex-1">Spieler</span>
+            <span class="text-white/60">{{ players().length }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              [(ngModel)]="newPlayerName"
+              (keyup.enter)="addPlayer()"
+              placeholder="Name hinzufügen..."
+              class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
+            />
+            <button
+              (click)="addPlayer()"
+              class="shrink-0 glass-button bg-blast-primary/80 hover:bg-blast-primary text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <!-- Player List -->
+          @if (players().length > 0) {
+            <div class="mt-3 space-y-1.5">
+              @for (player of players(); track player.id) {
+                <div class="flex items-center justify-between glass-subtle rounded-lg px-3 py-2">
+                  <span class="text-white text-sm">{{ player.name }}</span>
+                  <button (click)="removePlayer(player.id)" class="text-red-400 hover:text-red-300 transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          @if (players().length < 3) {
+            <p class="text-white/40 text-xs mt-2">Mindestens 3 Spieler benötigt</p>
+          }
+        </div>
+
+        <!-- Imposter Count Row -->
+        <div class="relative z-10 p-4 sm:p-5 flex items-center gap-3 border-b border-white/10">
+          <span class="text-2xl">👻</span>
+          <span class="text-white font-semibold flex-1">Imposter</span>
+          <div class="flex gap-2">
+            @for (count of [1, 2]; track count) {
+              <button
+                (click)="imposterCount.set(count)"
+                [class]="imposterCount() === count
+                  ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="w-10 h-10 rounded-xl font-bold transition-all text-lg"
+              >
+                {{ count }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Show Hint Toggle -->
+        <div class="relative z-10 p-4 sm:p-5 flex items-center gap-3">
+          <span class="text-2xl">💡</span>
+          <div class="flex-1">
+            <span class="text-white font-semibold">Hinweis für Imposter</span>
+            <p class="text-white/40 text-xs">Zeigt dem Imposter einen Hilfstext</p>
+          </div>
+          <button
+            (click)="showImposterHint.set(!showImposterHint())"
+            [class]="showImposterHint()
+              ? 'bg-emerald-500 justify-end'
+              : 'bg-white/20 justify-start'"
+            class="relative w-12 h-7 rounded-full transition-all duration-200 flex items-center px-1"
+          >
+            <div class="w-5 h-5 bg-white rounded-full shadow-md transition-transform"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 2: Timer Settings -->
+      <div class="glass rounded-2xl mb-6 overflow-hidden relative">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <!-- Time Duration Row -->
+        <div class="relative z-10 p-4 sm:p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-2xl">⏱️</span>
+            <span class="text-white font-semibold flex-1">Diskussionszeit</span>
+          </div>
+          <div class="flex justify-center gap-2 flex-wrap">
+            @for (time of [300, 360, 420, 480, 540, 600]; track time) {
+              <button
+                (click)="discussionTime.set(time)"
+                [class]="discussionTime() === time
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 shadow-lg shadow-orange-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="w-12 h-12 rounded-xl font-bold transition-all text-sm text-white"
+              >
+                {{ time / 60 }}m
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button
+        (click)="startGame()"
+        [disabled]="!canStartGame()"
+        [class]="canStartGame()
+          ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-lg shadow-red-500/30'
+          : 'glass-subtle cursor-not-allowed text-white/40'"
+        class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
+      >
+        Spiel starten
+      </button>
+
+      <!-- Instructions (at bottom) -->
+      <div class="glass-subtle rounded-2xl p-4 relative overflow-hidden">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 flex items-center gap-2 mb-2">
+          <span class="text-lg">📖</span>
+          <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
+        </div>
+        <div class="relative z-10 text-white/50 text-xs space-y-1">
+          <p>🎭 Einer oder mehrere sind Imposter</p>
+          <p>🔤 Nur die Unschuldigen kennen das Wort</p>
+          <p>🗣️ Beschreibt das Wort - seid nicht zu spezifisch!</p>
+          <p>🔎 Findet heraus, wer der Imposter ist</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- REVEAL PHASE -->
+  @if (phase() === 'reveal') {
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
+      <!-- Player Name -->
+      <div class="text-center mb-8">
+        <p class="text-white/60 mb-1 text-sm">Gib das Handy an:</p>
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">{{ currentPlayer()?.name }}</h2>
+      </div>
+
+      <!-- Card Container -->
+      <div class="relative w-72 h-96 md:w-80 md:h-[420px]">
+        <!-- Role Card (revealed content behind) - Dark and subtle to prevent peeking -->
+        <div
+          class="absolute inset-0 rounded-3xl p-6 pb-10 flex flex-col items-center justify-end shadow-2xl card-border bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+        >
+          @if (currentPlayer()?.isImposter) {
+            <div class="w-14 h-14 mb-3 rounded-full bg-red-500/20 flex items-center justify-center">
+              <span class="text-3xl">🕵️</span>
+            </div>
+            <h3 class="text-xl font-display font-bold text-red-400 text-center mb-2">Imposter</h3>
+            @if (showImposterHint()) {
+              <div class="bg-white/10 rounded-xl px-4 py-2 mb-2">
+                <p class="text-white/50 text-xs text-center">Hinweis:</p>
+                <p class="text-white font-semibold text-center">{{ wordHint() }}</p>
+              </div>
+              <p class="text-white/40 text-xs text-center">Tu so, als würdest du das Wort kennen</p>
+            }
+          } @else {
+            <h3 class="text-sm font-display font-medium text-white/60 text-center mb-2">Dein Wort:</h3>
+            <div class="bg-white/10 rounded-xl px-5 py-3">
+              <p class="text-xl font-bold text-white text-center">{{ secretWord() }}</p>
+            </div>
+          }
+        </div>
+
+        <!-- Cover Card (swipeable, always present) -->
+        <div
+          class="absolute inset-0 rounded-3xl bg-gradient-to-br from-blast-primary via-purple-600 to-blast-secondary p-6 flex flex-col items-center justify-center shadow-2xl select-none card-border"
+          [class.cursor-grab]="!isRevealed()"
+          [class.active:cursor-grabbing]="!isRevealed()"
+          [style.transform]="'translateY(' + cardDragY() + 'px)'"
+          [style.transition]="isDragging() ? 'none' : 'transform 0.3s ease-out'"
+          (touchstart)="onCardTouchStart($event)"
+          (touchmove)="onCardTouchMove($event)"
+          (touchend)="onCardTouchEnd()"
+          (mousedown)="onCardMouseDown($event)"
+          (mousemove)="onCardMouseMove($event)"
+          (mouseup)="onCardMouseUp()"
+          (mouseleave)="onCardMouseLeave()"
+        >
+          <!-- 3D Cartoon Character (full card background) -->
+          <img
+            [src]="'assets/characters/character-' + getCharacterIndex() + '.jpg'"
+            alt="Character"
+            class="absolute inset-0 w-full h-full object-cover rounded-3xl"
+          />
+
+          <!-- Dark gradient overlay from bottom (matches background) -->
+          <div class="absolute inset-0 bg-gradient-to-t from-[#1a1a2e]/70 via-[#16213e]/30 to-transparent rounded-3xl"></div>
+
+          <!-- Swipe Indicator (hidden when revealed) -->
+          <div
+            class="absolute bottom-6 left-0 right-0 flex flex-col items-center transition-opacity duration-300"
+            [class.opacity-0]="isRevealed()"
+          >
+            <div class="animate-bounce">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7" />
+              </svg>
+            </div>
+            <p class="text-white font-semibold text-base mt-2 drop-shadow-lg">Karte aufdecken</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="mt-8 flex justify-center gap-2">
+        @for (player of players(); track player.id; let i = $index) {
+          <div
+            [class]="i < currentRevealIndex() ? 'bg-green-400 shadow-lg shadow-green-400/50' : i === currentRevealIndex() ? 'bg-blast-primary shadow-lg shadow-blast-primary/50' : 'glass-subtle'"
+            class="w-3 h-3 rounded-full transition-all"
+          ></div>
+        }
+      </div>
+
+      <!-- Continue Button (after reveal, below dots) -->
+      <button
+        (click)="hideRoleAndNext()"
+        [class]="isRevealed() ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+        class="mt-6 w-72 md:w-80 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-opacity duration-300"
+      >
+        Verstanden ✓
+      </button>
+    </div>
+  }
+
+  <!-- DISCUSSION PHASE -->
+  @if (phase() === 'discussion') {
+    <div class="relative z-10 max-w-md mx-auto flex flex-col items-center justify-center min-h-[70vh]">
+      <!-- Discussion Icon -->
+      <div class="text-6xl mb-4 drop-shadow-lg">🗣️</div>
+      <h2 class="text-2xl md:text-3xl font-display font-bold text-white mb-2 drop-shadow-md">Diskussion!</h2>
+      <p class="text-white/70 text-base mb-8">Jeder beschreibt das Wort. Findet den Imposter!</p>
+
+      <!-- Centered Timer Display -->
+      <div
+        [class]="timeLeft() <= 30 ? 'glass-gradient-red animate-pulse' : 'glass-strong'"
+        class="rounded-3xl p-8 mb-6 transition-colors relative overflow-hidden"
+      >
+        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 text-7xl font-bold text-white font-display drop-shadow-lg">
+          {{ formatTime(timeLeft()) }}
+        </div>
+      </div>
+
+      <!-- Timer Controls -->
+      <div class="flex gap-4 mb-8">
+        <button
+          (click)="togglePauseTimer()"
+          class="glass-button px-6 py-3 rounded-xl text-white font-semibold transition-all flex items-center gap-2"
+        >
+          @if (timerPaused()) {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <span>Fortsetzen</span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+            </svg>
+            <span>Pause</span>
+          }
+        </button>
+        <button
+          (click)="endDiscussion()"
+          class="bg-gradient-to-r from-red-500 to-orange-500 px-6 py-3 rounded-xl text-white font-semibold transition-all flex items-center gap-2 shadow-lg shadow-red-500/30 hover:opacity-90"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 6h12v12H6z"/>
+          </svg>
+          <span>Beenden</span>
+        </button>
+      </div>
+
+      <!-- Tip -->
+      <div class="glass-subtle rounded-xl p-3">
+        <p class="text-white/40 text-sm">Tipp: Seid nicht zu spezifisch!</p>
+      </div>
+    </div>
+  }
+
+  <!-- RESULT PHASE -->
+  @if (phase() === 'result') {
+    <div class="relative z-10 max-w-md mx-auto text-center">
+      @if (!impostersRevealed()) {
+        <!-- Pre-reveal state -->
+        <div class="flex flex-col items-center justify-center min-h-[60vh]">
+          <div class="glass-strong rounded-2xl p-8 mb-6 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+            <div class="relative z-10 text-6xl mb-4 drop-shadow-lg">⏰</div>
+            <h2 class="relative z-10 text-3xl font-display font-bold text-white drop-shadow-md mb-2">Zeit ist um!</h2>
+            <p class="relative z-10 text-white/60">Wer ist der Imposter?</p>
+          </div>
+
+          <button
+            (click)="revealImposters()"
+            class="w-full bg-gradient-to-r from-red-500 to-orange-500 py-5 rounded-2xl text-white font-bold text-xl shadow-lg shadow-red-500/30 hover:opacity-90 transition-all animate-pulse"
+          >
+            🕵️ Imposter enthüllen
+          </button>
+        </div>
+      } @else {
+        <!-- Revealed state -->
+        <!-- Header -->
+        <div class="glass-strong rounded-2xl p-8 mb-6 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+          <div class="relative z-10 text-6xl mb-4 drop-shadow-lg">🕵️</div>
+          <h2 class="relative z-10 text-3xl font-display font-bold text-white drop-shadow-md">Aufgelöst!</h2>
+        </div>
+
+        <!-- Reveal -->
+        <div class="glass-strong rounded-2xl p-6 mb-6 relative overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+          <!-- Secret Word -->
+          <h3 class="relative z-10 text-lg font-bold text-white/60 mb-2">Das Wort war:</h3>
+          <p class="relative z-10 text-4xl font-bold bg-gradient-to-r from-blast-primary to-blast-secondary bg-clip-text text-transparent mb-6">{{ secretWord() }}</p>
+
+          <!-- Imposter Reveal -->
+          <div class="relative z-10 glass-gradient-red rounded-xl p-4">
+            <h3 class="text-lg font-bold text-white mb-3 drop-shadow-md">
+              @if (imposters().length === 1) {
+                Der Imposter war:
+              } @else {
+                Die Imposter waren:
+              }
+            </h3>
+            @for (imposter of imposters(); track imposter.id) {
+              <p class="text-2xl font-bold text-white">{{ imposter.name }} 🕵️</p>
+            }
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-4">
+          <button
+            (click)="playAgain()"
+            class="flex-1 bg-gradient-to-r from-blast-primary to-blast-secondary py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blast-primary/30 hover:opacity-90 transition-all"
+          >
+            Nochmal
+          </button>
+          <button
+            (click)="goHome()"
+            class="flex-1 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-all"
+          >
+            Menü
+          </button>
+        </div>
+      }
+    </div>
+  }
+</div>
