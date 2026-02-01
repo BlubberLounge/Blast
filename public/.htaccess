@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Wenn eine existierende Datei oder Verzeichnis angefragt wird, direkt ausliefern
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Alle anderen Anfragen auf index.html umleiten (Angular Routing)
+RewriteRule ^ index.html [L]
