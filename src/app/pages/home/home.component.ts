@@ -458,8 +458,8 @@ export class HomeComponent {
     return colors[gameId] || colors['imposter'];
   }
 
-  // Hidden feature: Clear localStorage after 5 taps
-  onSecretReset(): void {
+  // Hidden feature: Clear all caches after 5 taps
+  async onSecretReset(): Promise<void> {
     this.resetClickCount++;
 
     // Reset counter after 3 seconds of no clicks
@@ -471,10 +471,24 @@ export class HomeComponent {
     }, 3000);
 
     if (this.resetClickCount >= 5) {
+      // Clear localStorage
       localStorage.clear();
       this.favorites.set(new Set());
       this.resetClickCount = 0;
-      // Visual feedback - page will refresh to show cleared state
+
+      // Clear Service Worker caches
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+      }
+
+      // Unregister Service Workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(reg => reg.unregister()));
+      }
+
+      // Force reload from server
       window.location.reload();
     }
   }
