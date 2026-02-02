@@ -76,17 +76,19 @@
         </div>
 
         <!-- Imposter Count Row -->
-        <div class="relative z-10 p-4 sm:p-5 flex items-center gap-3 border-b border-white/10">
-          <span class="text-2xl">👻</span>
-          <span class="text-white font-semibold flex-1">Imposter</span>
-          <div class="flex gap-2">
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">👻</span>
+            <span class="text-white font-semibold">Imposter</span>
+          </div>
+          <div class="flex justify-center gap-2">
             @for (count of [1, 2, 3, 4, 5]; track count) {
               <button
                 (click)="imposterCount.set(count)"
                 [class]="imposterCount() === count
                   ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
                   : 'glass-subtle text-white/60 hover:text-white'"
-                class="w-9 h-9 rounded-xl font-bold transition-all text-base"
+                class="w-10 h-10 rounded-xl font-bold transition-all text-base"
               >
                 {{ count }}
               </button>

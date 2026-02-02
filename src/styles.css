@@ -216,6 +216,22 @@ body {
   100% { background-position: 0% 50%; }
 }
 
+/* Toast fade-in animation */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
 /* Glow Effects */
 .glow-primary {
   box-shadow: 0 0 40px rgba(99, 102, 241, 0.3);

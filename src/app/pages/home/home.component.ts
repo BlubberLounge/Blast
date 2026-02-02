@@ -32,6 +32,10 @@ export class HomeComponent {
   favorites = signal<Set<string>>(this.loadFavorites());
   showFavoritesOnly = signal<boolean>(false);
 
+  // Toast notification
+  toastMessage = signal<string>('');
+  toastVisible = signal<boolean>(false);
+
   // Hidden reset feature
   private resetClickCount = 0;
   private resetClickTimer: ReturnType<typeof setTimeout> | null = null;
@@ -458,6 +462,15 @@ export class HomeComponent {
     return colors[gameId] || colors['imposter'];
   }
 
+  // Show toast notification
+  private showToast(message: string, duration = 2000): void {
+    this.toastMessage.set(message);
+    this.toastVisible.set(true);
+    setTimeout(() => {
+      this.toastVisible.set(false);
+    }, duration);
+  }
+
   // Hidden feature: Clear all caches after 5 taps
   async onSecretReset(): Promise<void> {
     this.resetClickCount++;
@@ -471,6 +484,12 @@ export class HomeComponent {
     }, 3000);
 
     if (this.resetClickCount >= 5) {
+      // Show toast
+      this.showToast('Cache wird geleert...', 1500);
+
+      // Wait a moment for toast to show
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Clear localStorage
       localStorage.clear();
       this.favorites.set(new Set());
