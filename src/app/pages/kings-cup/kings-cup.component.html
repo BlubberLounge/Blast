@@ -1,0 +1,324 @@
+<div class="min-h-screen bg-animated-gradient p-3 sm:p-4">
+  <!-- Animated Background Orbs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-yellow-600/15 to-transparent rounded-full blur-3xl animate-blob"></div>
+    <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-amber-600/15 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+  </div>
+
+  <!-- Header -->
+  @if (phase() !== 'king-drink') {
+    <div class="relative z-10 flex items-center justify-between mb-4 sm:mb-6">
+      <button (click)="goHome()" class="glass-button p-2 rounded-xl text-white/70 hover:text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+      </button>
+      <h1 class="text-xl sm:text-2xl font-display font-bold text-white drop-shadow-lg">👑 Kings Cup</h1>
+      <div class="w-8 sm:w-10"></div>
+    </div>
+  }
+
+  <!-- SETUP PHASE -->
+  @if (phase() === 'setup') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Card 1: Players -->
+      <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden">
+        <!-- Players Row -->
+        <div class="p-4 sm:p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">👥</span>
+            <span class="text-white font-semibold flex-1">Spieler</span>
+            <span class="text-white/60">{{ players().length }}/12</span>
+          </div>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              [ngModel]="newPlayerName()"
+              (ngModelChange)="newPlayerName.set($event)"
+              (keyup.enter)="addPlayer()"
+              placeholder="Name hinzufügen..."
+              maxlength="20"
+              class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
+            />
+            <button
+              (click)="addPlayer()"
+              [disabled]="!newPlayerName().trim() || players().length >= 12"
+              class="shrink-0 glass-button bg-yellow-500/80 hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <!-- Player List -->
+          @if (players().length > 0) {
+            <div class="mt-3 space-y-1.5 max-h-48 overflow-y-auto">
+              @for (player of players(); track player.id) {
+                <div class="flex items-center justify-between glass-subtle rounded-lg px-3 py-2">
+                  <span class="text-white text-sm">{{ player.name }}</span>
+                  <button (click)="removePlayer(player.id)" class="text-red-400 hover:text-red-300 transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          @if (players().length < 2) {
+            <p class="text-white/40 text-xs mt-2">Mindestens 2 Spieler benötigt</p>
+          }
+        </div>
+      </div>
+
+      <!-- Card 2: Rules Preview -->
+      <div class="glass rounded-2xl p-4 sm:p-5 mb-6">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-2xl">📜</span>
+          <span class="text-white font-semibold">Kartenregeln</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-sm max-h-64 overflow-y-auto">
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">A</span>
+            <span class="text-white/80">Wasserfall</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">2</span>
+            <span class="text-white/80">Du trinkst</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">3</span>
+            <span class="text-white/80">Ich trinke</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">4</span>
+            <span class="text-white/80">Boden</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">5</span>
+            <span class="text-white/80">Männer</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">6</span>
+            <span class="text-white/80">Frauen</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">7</span>
+            <span class="text-white/80">Himmel</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">8</span>
+            <span class="text-white/80">Trinkpartner</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">9</span>
+            <span class="text-white/80">Reim</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">10</span>
+            <span class="text-white/80">Kategorie</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">J</span>
+            <span class="text-white/80">Neue Regel</span>
+          </div>
+          <div class="glass-subtle rounded-lg p-2 flex items-center gap-2">
+            <span class="font-bold text-yellow-400 w-6">Q</span>
+            <span class="text-white/80">Fragemeister</span>
+          </div>
+          <div class="col-span-2 bg-linear-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/30 rounded-lg p-2 flex items-center justify-center gap-2">
+            <span class="font-bold text-yellow-400">K</span>
+            <span class="text-white/80">Kings Cup (4. König = Exen!)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button
+        (click)="startGame()"
+        [disabled]="!canStartGame()"
+        [class]="canStartGame()
+          ? 'bg-linear-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 shadow-lg shadow-yellow-500/30'
+          : 'glass-subtle cursor-not-allowed text-white/40'"
+        class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
+      >
+        Spiel starten
+      </button>
+
+      <!-- Instructions -->
+      <div class="glass-subtle rounded-2xl p-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-lg">📖</span>
+          <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
+        </div>
+        <div class="text-white/50 text-xs space-y-1">
+          <p>🃏 Ziehe reihum eine Karte vom Stapel</p>
+          <p>📜 Führe die Regel der Karte aus</p>
+          <p>👑 Wer den 4. König zieht, trinkt den Kings Cup!</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- PLAYING PHASE -->
+  @if (phase() === 'playing') {
+    <div class="relative z-10 max-w-md mx-auto flex flex-col items-center min-h-[80vh] justify-center">
+      <!-- Game Info Bar -->
+      <div class="w-full glass rounded-2xl p-4 mb-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-white/60 text-xs">Am Zug:</p>
+            <p class="text-xl font-display font-bold text-white drop-shadow-md">{{ currentPlayer()?.name ?? '' }}</p>
+          </div>
+          <div class="flex gap-4">
+            <div class="text-center">
+              <p class="text-lg font-bold text-white">{{ remainingCards() }}</p>
+              <p class="text-white/50 text-xs">Karten</p>
+            </div>
+            <div class="text-center">
+              <p class="text-lg font-bold text-yellow-400 flex items-center gap-1">
+                {{ kingsDrawn() }}/4 👑
+              </p>
+              <p class="text-white/50 text-xs">Könige</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Area -->
+      <div class="relative w-56 h-80 mb-6">
+        @if (!currentCard()) {
+          <!-- Card Back (Deck) -->
+          <button
+            (click)="drawCard()"
+            [disabled]="isCardFlipping() || remainingCards() === 0"
+            class="card-container w-full h-full disabled:cursor-not-allowed"
+          >
+            <div class="card" [class.flipping]="isCardFlipping()">
+              <div class="card-back bg-linear-to-br from-yellow-600 via-amber-600 to-yellow-700 rounded-3xl flex flex-col items-center justify-center border-4 border-yellow-400/30 shadow-2xl shadow-yellow-500/30">
+                <div class="text-6xl mb-2">👑</div>
+                <p class="text-white/80 text-sm font-semibold">Tippe zum Ziehen</p>
+              </div>
+            </div>
+          </button>
+        } @else {
+          <!-- Drawn Card -->
+          <div class="card-container w-full h-full">
+            <div class="card flipped">
+              <div class="card-front bg-white rounded-3xl shadow-2xl p-4 flex flex-col" [class]="getSuitColor(currentCard()!.suit)">
+                <!-- Top Left -->
+                <div class="text-left">
+                  <div class="text-2xl font-bold leading-none">{{ getCardDisplayValue(currentCard()!.value) }}</div>
+                  <div class="text-3xl leading-none">{{ getSuitSymbol(currentCard()!.suit) }}</div>
+                </div>
+
+                <!-- Center -->
+                <div class="flex-1 flex items-center justify-center">
+                  <div class="text-7xl">{{ getSuitSymbol(currentCard()!.suit) }}</div>
+                </div>
+
+                <!-- Bottom Right -->
+                <div class="text-right transform rotate-180">
+                  <div class="text-2xl font-bold leading-none">{{ getCardDisplayValue(currentCard()!.value) }}</div>
+                  <div class="text-3xl leading-none">{{ getSuitSymbol(currentCard()!.suit) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Rule Display -->
+      @if (currentCard() && showRule()) {
+        <div class="w-full glass-strong rounded-2xl p-4 mb-6 animate-fade-in">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="text-3xl">{{ currentRule()?.icon }}</span>
+            <h3 class="text-xl font-display font-bold text-yellow-400 drop-shadow-md">{{ currentRule()?.title }}</h3>
+          </div>
+          <p class="text-white/80 text-sm">{{ currentRule()?.description }}</p>
+        </div>
+      }
+
+      <!-- Action Buttons -->
+      <div class="w-full flex gap-3">
+        @if (!currentCard()) {
+          <button
+            (click)="drawCard()"
+            [disabled]="isCardFlipping() || remainingCards() === 0"
+            class="flex-1 bg-linear-to-r from-yellow-500 to-amber-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-yellow-500/30 hover:opacity-90 transition-all disabled:opacity-50"
+          >
+            Karte ziehen
+          </button>
+        } @else {
+          <button
+            (click)="nextPlayer()"
+            class="flex-1 bg-linear-to-r from-yellow-500 to-amber-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-yellow-500/30 hover:opacity-90 transition-all"
+          >
+            Nächster Spieler
+          </button>
+        }
+        <button
+          (click)="resetGame()"
+          class="glass-button py-4 px-5 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- KING DRINK PHASE -->
+  @if (phase() === 'king-drink') {
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen">
+      <div class="text-center max-w-md animate-bounce-slow">
+        <div class="glass-gradient-gold rounded-3xl p-8 mb-6">
+          <div class="text-8xl mb-4">👑🍺</div>
+          <h2 class="text-4xl font-display font-bold text-yellow-400 mb-4 drop-shadow-lg">KINGS CUP!</h2>
+          <p class="text-2xl font-bold text-white mb-2">{{ currentPlayer()?.name ?? '' }}</p>
+          <p class="text-white/70">
+            Du hast den 4. König gezogen!<br/>
+            Trinke den gesamten Kings Cup!
+          </p>
+        </div>
+        <button
+          (click)="continueAfterKingsDrink()"
+          class="w-full bg-linear-to-r from-yellow-500 to-amber-500 py-5 rounded-2xl text-white font-bold text-xl shadow-lg shadow-yellow-500/30 hover:opacity-90 transition-all"
+        >
+          Prost! 🍻
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- RESULT PHASE -->
+  @if (phase() === 'result') {
+    <div class="relative z-10 max-w-md mx-auto text-center">
+      <div class="glass-gradient-gold rounded-2xl p-8 mb-6">
+        <div class="text-6xl mb-4 drop-shadow-lg">🎉</div>
+        <h2 class="text-3xl font-display font-bold text-white mb-2 drop-shadow-lg">Spiel beendet!</h2>
+        <p class="text-white/70">{{ drawnCards().length }} Karten wurden gezogen</p>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <button
+          (click)="playAgain()"
+          class="w-full bg-linear-to-r from-yellow-500 to-amber-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-yellow-500/30 hover:opacity-90 transition-all"
+        >
+          Nochmal spielen
+        </button>
+        <button
+          (click)="resetGame()"
+          class="w-full glass-button py-4 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          Zurück zum Setup
+        </button>
+        <button
+          (click)="goHome()"
+          class="w-full glass-subtle py-4 rounded-2xl text-white/70 font-bold text-lg transition-all hover:text-white"
+        >
+          Zur Startseite
+        </button>
+      </div>
+    </div>
+  }
+</div>

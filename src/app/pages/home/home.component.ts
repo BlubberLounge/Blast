@@ -172,9 +172,10 @@ export class HomeComponent {
       icon: '🧠',
       gradient: 'from-cyan-500 via-teal-500 to-emerald-500',
       shadowColor: 'shadow-cyan-500/30',
-      available: false,
+      available: true,
       size: 'small',
-      players: '2-8'
+      players: '2-8',
+      badge: 'Neu'
     },
     {
       id: 'werwolf',
@@ -271,9 +272,9 @@ export class HomeComponent {
       icon: '👑',
       gradient: 'from-yellow-500 via-amber-500 to-yellow-600',
       shadowColor: 'shadow-yellow-500/30',
-      available: false,
+      available: true,
       size: 'small',
-      players: '3-10'
+      players: '2-10'
     },
     {
       id: 'flaschendrehen',
@@ -296,17 +297,6 @@ export class HomeComponent {
       available: false,
       size: 'small',
       players: '2-8'
-    },
-    {
-      id: 'song-quiz',
-      name: 'Song Quiz',
-      description: 'Erkenne den Song in Sekunden!',
-      icon: '🎵',
-      gradient: 'from-green-500 via-emerald-500 to-teal-500',
-      shadowColor: 'shadow-green-500/30',
-      available: false,
-      size: 'small',
-      players: '2-10'
     },
     {
       id: 'wortekette',
@@ -348,9 +338,10 @@ export class HomeComponent {
       icon: '🎪',
       gradient: 'from-violet-500 via-purple-500 to-pink-500',
       shadowColor: 'shadow-violet-500/30',
-      available: false,
+      available: true,
       size: 'medium',
-      players: '4-16'
+      players: '4-16',
+      badge: 'Neu'
     },
     {
       id: 'lippenlesen',

@@ -1,0 +1,400 @@
+<div class="min-h-screen p-3 sm:p-4"
+     [class]="phase() === 'setup' ? 'bg-animated-gradient' : 'animated-gradient-bg'">
+  <!-- Animated Background Orbs (only on setup) -->
+  @if (phase() === 'setup') {
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      <div class="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-radial from-cyan-600/15 to-transparent rounded-full blur-3xl animate-blob"></div>
+      <div class="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-radial from-teal-600/15 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+    </div>
+  }
+
+  <!-- Header -->
+  <div class="relative z-10 flex items-center justify-between mb-4 sm:mb-6">
+    <button (click)="backToMenu()" class="glass-button p-2 rounded-xl text-white/70 hover:text-white">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <h1 class="text-xl sm:text-2xl font-display font-bold text-white drop-shadow-lg">Quiz Battle</h1>
+    <div class="w-8 sm:w-10"></div>
+  </div>
+
+  <!-- SETUP PHASE -->
+  @if (phase() === 'setup') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Card 1: Players -->
+      <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden relative">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <!-- Add Players Row -->
+        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">✋</span>
+            <span class="text-white font-semibold flex-1">Spieler</span>
+            <span class="text-white/60">{{ players().length }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+          <div class="flex gap-2">
+            <input
+              #playerInput
+              type="text"
+              [value]="newPlayerName"
+              (input)="newPlayerName = playerInput.value"
+              (keyup.enter)="addPlayer(); playerInput.value = ''"
+              placeholder="Name hinzufügen..."
+              maxlength="20"
+              class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
+            />
+            <button
+              (click)="addPlayer(); playerInput.value = ''"
+              class="shrink-0 glass-button bg-blast-primary/80 hover:bg-blast-primary text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <!-- Player List -->
+          @if (players().length > 0) {
+            <div class="mt-3 space-y-1.5 max-h-40 overflow-y-auto">
+              @for (player of players(); track player.id) {
+                <div class="flex items-center justify-between glass-subtle rounded-lg px-3 py-2">
+                  <span class="text-white text-sm">{{ player.name }}</span>
+                  <button (click)="removePlayer(player.id)" class="text-red-400 hover:text-red-300 transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          @if (players().length < 2) {
+            <p class="text-white/40 text-xs mt-2">Mindestens 2 Spieler benötigt</p>
+          }
+        </div>
+
+        <!-- Questions per Player Row -->
+        <div class="relative z-10 p-4 sm:p-5">
+          <div class="flex items-center gap-3 mb-3">
+            <span class="text-2xl">❓</span>
+            <span class="text-white font-semibold">Fragen pro Spieler</span>
+          </div>
+          <div class="flex justify-center gap-2">
+            @for (count of [3, 5, 10]; track count) {
+              <button
+                (click)="setQuestionsPerPlayer(count)"
+                [class]="questionsPerPlayer() === count
+                  ? 'bg-linear-to-r from-cyan-500 to-teal-500 shadow-lg shadow-cyan-500/30'
+                  : 'glass-subtle text-white/60 hover:text-white'"
+                class="w-12 h-12 rounded-xl font-bold transition-all text-sm text-white"
+              >
+                {{ count }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Category Selection -->
+      <div class="glass rounded-2xl mb-6 overflow-hidden relative">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <div class="relative z-10 p-4 sm:p-5">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-2xl">🎯</span>
+            <span class="text-white font-semibold flex-1">Kategorie</span>
+            @if (selectedCategory()) {
+              <span class="text-cyan-400 text-sm font-medium">{{ selectedCategory() }}</span>
+            }
+          </div>
+
+          <!-- Category Grid -->
+          <div class="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+            <button
+              (click)="selectCategory('')"
+              [class]="selectedCategory() === '' ? 'bg-linear-to-r from-cyan-500 to-teal-500 shadow-lg shadow-cyan-500/30' : 'glass-subtle text-white/70 hover:text-white'"
+              class="py-2.5 px-3 rounded-xl font-semibold transition-all text-sm text-white"
+            >
+              🎲 Alle
+            </button>
+            @for (cat of categories; track cat) {
+              <button
+                (click)="selectCategory(cat)"
+                [class]="selectedCategory() === cat ? 'bg-linear-to-r from-cyan-500 to-teal-500 shadow-lg shadow-cyan-500/30' : 'glass-subtle text-white/70 hover:text-white'"
+                class="py-2.5 px-3 rounded-xl font-semibold transition-all text-sm text-white text-left"
+              >
+                {{ cat }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Button -->
+      <button
+        (click)="startGame()"
+        [disabled]="!canStart()"
+        [class]="canStart()
+          ? 'bg-linear-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 shadow-lg shadow-cyan-500/30'
+          : 'glass-subtle cursor-not-allowed text-white/40'"
+        class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
+      >
+        Spiel starten
+      </button>
+
+      <!-- Instructions -->
+      <div class="glass-subtle rounded-2xl p-4 relative overflow-hidden">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="relative z-10 flex items-center gap-2 mb-2">
+          <span class="text-lg">📖</span>
+          <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
+        </div>
+        <div class="relative z-10 text-white/50 text-xs space-y-1">
+          <p>🧠 Jeder bekommt Quizfragen zu beantworten</p>
+          <p>⏱️ Du hast 15 Sekunden pro Frage</p>
+          <p>✅ Richtige Antwort = 10 Punkte</p>
+          <p>🏆 Wer am Ende die meisten Punkte hat, gewinnt!</p>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- READY PHASE -->
+  @if (phase() === 'ready') {
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
+      <!-- Player Info -->
+      <div class="text-center mb-8">
+        <p class="text-white/60 mb-1 text-sm">Gib das Handy an:</p>
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">{{ currentPlayer()?.name }}</h2>
+      </div>
+
+      <!-- Card -->
+      <div class="glass-strong rounded-3xl p-8 mb-8 text-center relative overflow-hidden w-[90vw] md:w-80">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <div class="relative z-10 text-6xl mb-4">🧠</div>
+        <div class="relative z-10 glass-subtle rounded-xl px-4 py-2 mb-4 inline-block">
+          <span class="text-white/70 text-sm">Frage {{ (currentPlayer()?.currentQuestionIndex || 0) + 1 }} von {{ questionsPerPlayer() }}</span>
+        </div>
+        <p class="relative z-10 text-white/60">Mach dich bereit!</p>
+      </div>
+
+      <button
+        (click)="playerReady()"
+        class="w-[90vw] md:w-80 bg-linear-to-r from-green-500 to-emerald-500 py-4 rounded-2xl text-white font-bold text-xl hover:opacity-90 transition-all shadow-lg shadow-green-500/30"
+      >
+        Bereit!
+      </button>
+    </div>
+  }
+
+  <!-- QUESTION PHASE -->
+  @if (phase() === 'question') {
+    <div class="relative z-10 max-w-md mx-auto">
+      <!-- Timer & Player Info Bar -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="glass-subtle px-4 py-2 rounded-xl">
+          <span class="text-white/70 text-sm">{{ currentPlayer()?.name }}</span>
+        </div>
+        <div
+          [class]="timeLeft() <= 5 ? 'glass-gradient-red animate-pulse' : 'glass-subtle'"
+          class="px-4 py-2 rounded-xl flex items-center gap-2 transition-all"
+        >
+          <svg class="w-5 h-5" [class]="timeLeft() <= 5 ? 'text-red-300' : 'text-cyan-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="font-bold text-lg" [class]="timeLeft() <= 5 ? 'text-red-300' : 'text-cyan-400'">{{ timeLeft() }}</span>
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="glass rounded-2xl p-6 mb-6 relative overflow-hidden">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <div class="relative z-10 text-cyan-400/70 text-sm mb-2">{{ currentQuestion()?.category }}</div>
+        <h2 class="relative z-10 text-xl font-semibold text-white leading-relaxed">
+          {{ currentQuestion()?.question }}
+        </h2>
+      </div>
+
+      <!-- Answer Options -->
+      <div class="space-y-3">
+        @for (option of currentQuestion()?.options; track $index; let i = $index) {
+          <button
+            (click)="selectAnswer(i)"
+            [disabled]="selectedAnswer() !== null"
+            class="w-full p-4 rounded-xl text-left text-white font-medium transition-all
+                   glass-button hover:scale-[1.02] active:scale-[0.98]
+                   disabled:hover:scale-100 disabled:active:scale-100"
+          >
+            <span class="inline-block w-8 h-8 rounded-lg bg-linear-to-r from-cyan-500/30 to-teal-500/30 text-center leading-8 mr-3 text-cyan-300 font-bold">
+              {{ ['A', 'B', 'C', 'D'][i] }}
+            </span>
+            {{ option }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- RESULT PHASE -->
+  @if (phase() === 'result') {
+    <div class="relative z-10 max-w-md mx-auto text-center">
+      <!-- Result Card -->
+      <div class="glass-strong rounded-2xl p-8 mb-6 relative overflow-hidden">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        @if (lastAnswerCorrect()) {
+          <div class="relative z-10 text-6xl mb-4 drop-shadow-lg">🎉</div>
+          <h2 class="relative z-10 text-3xl font-display font-bold text-emerald-400 mb-2 drop-shadow-md">Richtig!</h2>
+          <div class="relative z-10 glass-gradient-green rounded-xl p-4 mt-4">
+            <span class="text-2xl font-bold text-green-300">+10 Punkte</span>
+          </div>
+        } @else {
+          <div class="relative z-10 text-6xl mb-4 drop-shadow-lg">😔</div>
+          <h2 class="relative z-10 text-3xl font-display font-bold text-red-400 mb-2 drop-shadow-md">
+            @if (selectedAnswer() === null || selectedAnswer() === -1) {
+              Zeit abgelaufen!
+            } @else {
+              Falsch!
+            }
+          </h2>
+          <p class="relative z-10 text-white/60 mt-4">Die richtige Antwort war:</p>
+          <div class="relative z-10 glass-gradient-green rounded-xl p-3 mt-2">
+            <p class="text-emerald-300 font-semibold">
+              {{ currentQuestion()?.options?.[currentQuestion()?.correctIndex || 0] }}
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Current Standings -->
+      <div class="glass rounded-2xl p-6 mb-6 relative overflow-hidden">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <h3 class="relative z-10 text-lg font-bold text-white mb-4 drop-shadow-md">Punktestand</h3>
+        <div class="relative z-10 space-y-2">
+          @for (player of sortedPlayers(); track player.id; let i = $index) {
+            <div
+              [class]="player.id === currentPlayer()?.id ? 'bg-linear-to-r from-cyan-500/30 to-teal-500/20 border border-cyan-500/30' : 'glass-subtle'"
+              class="flex items-center justify-between rounded-xl px-4 py-3"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '' }}</span>
+                <span class="text-white/50 text-sm">{{ i + 1 }}.</span>
+                <span class="text-white">{{ player.name }}</span>
+              </div>
+              <span class="text-cyan-400 font-bold text-xl">{{ player.score }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Next Button -->
+      <button
+        (click)="nextTurn()"
+        class="w-full bg-linear-to-r from-cyan-500 to-teal-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-cyan-500/30 hover:opacity-90 transition-all"
+      >
+        Weiter
+      </button>
+    </div>
+  }
+
+  <!-- SCORES PHASE -->
+  @if (phase() === 'scores') {
+    <div class="relative z-10 max-w-md mx-auto text-center">
+      <!-- Winner Celebration -->
+      <div class="glass-strong rounded-2xl p-8 mb-6 relative overflow-hidden">
+        <!-- Card gradient overlay -->
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+        <div class="relative z-10 text-6xl mb-4 drop-shadow-lg animate-bounce">🏆</div>
+        <p class="relative z-10 text-white/60 mb-2">Gewinner</p>
+        <h2 class="relative z-10 text-3xl font-display font-bold text-white drop-shadow-md">
+          {{ sortedPlayers()[0]?.name }}
+        </h2>
+        <div class="relative z-10 glass-gradient-green rounded-xl p-4 mt-4">
+          <span class="text-2xl font-bold text-cyan-300">{{ sortedPlayers()[0]?.score }} Punkte</span>
+        </div>
+      </div>
+
+      <!-- Podium -->
+      @if (sortedPlayers().length >= 2) {
+        <div class="flex items-end justify-center gap-3 mb-6">
+          <!-- 2nd Place -->
+          <div class="glass rounded-2xl p-4 text-center w-24 relative overflow-hidden">
+            <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+            <div class="relative z-10 text-3xl mb-2">🥈</div>
+            <p class="relative z-10 text-white text-sm truncate">{{ sortedPlayers()[1]?.name }}</p>
+            <p class="relative z-10 text-cyan-400 font-bold">{{ sortedPlayers()[1]?.score }}</p>
+          </div>
+
+          <!-- 1st Place -->
+          <div class="glass-strong rounded-2xl p-4 text-center w-28 transform scale-110 relative overflow-hidden border-2 border-yellow-500/30">
+            <div class="absolute inset-0 bg-linear-to-t from-yellow-500/20 via-transparent to-transparent pointer-events-none z-0"></div>
+            <div class="relative z-10 text-4xl mb-2">🥇</div>
+            <p class="relative z-10 text-white font-bold truncate">{{ sortedPlayers()[0]?.name }}</p>
+            <p class="relative z-10 text-yellow-300 font-bold">{{ sortedPlayers()[0]?.score }}</p>
+          </div>
+
+          <!-- 3rd Place -->
+          @if (sortedPlayers().length >= 3) {
+            <div class="glass rounded-2xl p-4 text-center w-24 relative overflow-hidden">
+              <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+              <div class="relative z-10 text-3xl mb-2">🥉</div>
+              <p class="relative z-10 text-white text-sm truncate">{{ sortedPlayers()[2]?.name }}</p>
+              <p class="relative z-10 text-cyan-400 font-bold">{{ sortedPlayers()[2]?.score }}</p>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Full Leaderboard -->
+      @if (sortedPlayers().length > 3) {
+        <div class="glass rounded-2xl p-6 mb-6 relative overflow-hidden">
+          <!-- Card gradient overlay -->
+          <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+
+          <h3 class="relative z-10 text-lg font-bold text-white mb-4 drop-shadow-md">Alle Ergebnisse</h3>
+          <div class="relative z-10 space-y-2">
+            @for (player of sortedPlayers(); track player.id; let i = $index) {
+              <div class="glass-subtle flex items-center justify-between p-3 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <span class="text-white/50">{{ i + 1 }}.</span>
+                  <span class="text-white">{{ player.name }}</span>
+                </div>
+                <span class="text-cyan-400 font-bold">{{ player.score }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3">
+        <button
+          (click)="playAgain()"
+          class="flex-1 bg-linear-to-r from-cyan-500 to-teal-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-cyan-500/30 hover:opacity-90 transition-all"
+        >
+          🔄 Nochmal
+        </button>
+        <button
+          (click)="backToMenu()"
+          class="flex-1 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-all"
+        >
+          Menü
+        </button>
+      </div>
+    </div>
+  }
+</div>

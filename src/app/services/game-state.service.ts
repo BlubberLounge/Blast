@@ -30,12 +30,32 @@ export interface WoerterketteSettings {
   turnTime: number;
 }
 
+export interface KingsCupSettings {
+  players: { id: string; name: string }[];
+}
+
+export interface QuizBattleSettings {
+  players: { id: string; name: string }[];
+  selectedCategory: string;
+  questionsPerPlayer: number;
+}
+
+export interface ActivitySettings {
+  players: { id: string; name: string }[];
+  roundTime: number;
+  selectedCategory: string;
+  totalRounds: number;
+}
+
 export interface GameSettings {
   undercover: UndercoverSettings;
   kopfkino: KopfkinoSettings;
   montagsmaler: MontagsmalerSettings;
   lippenlesen: LippenlesenSettings;
   woerterkette: WoerterketteSettings;
+  kingsCup: KingsCupSettings;
+  quizBattle: QuizBattleSettings;
+  activity: ActivitySettings;
 }
 
 const STORAGE_KEY = 'blast-game-settings';
@@ -65,6 +85,20 @@ const DEFAULT_SETTINGS: GameSettings = {
   woerterkette: {
     players: [],
     turnTime: 10
+  },
+  kingsCup: {
+    players: []
+  },
+  quizBattle: {
+    players: [],
+    selectedCategory: '',
+    questionsPerPlayer: 5
+  },
+  activity: {
+    players: [],
+    roundTime: 60,
+    selectedCategory: '',
+    totalRounds: 3
   }
 };
 
@@ -89,7 +123,10 @@ export class GameStateService {
           kopfkino: { ...DEFAULT_SETTINGS.kopfkino, ...parsed.kopfkino },
           montagsmaler: { ...DEFAULT_SETTINGS.montagsmaler, ...parsed.montagsmaler },
           lippenlesen: { ...DEFAULT_SETTINGS.lippenlesen, ...parsed.lippenlesen },
-          woerterkette: { ...DEFAULT_SETTINGS.woerterkette, ...parsed.woerterkette }
+          woerterkette: { ...DEFAULT_SETTINGS.woerterkette, ...parsed.woerterkette },
+          kingsCup: { ...DEFAULT_SETTINGS.kingsCup, ...parsed.kingsCup },
+          quizBattle: { ...DEFAULT_SETTINGS.quizBattle, ...parsed.quizBattle },
+          activity: { ...DEFAULT_SETTINGS.activity, ...parsed.activity }
         };
       }
     } catch (e) {
@@ -167,6 +204,45 @@ export class GameStateService {
     this.settings.update(s => ({
       ...s,
       woerterkette: { ...s.woerterkette, ...settings }
+    }));
+    this.saveSettings();
+  }
+
+  // Kings Cup
+  getKingsCupSettings(): KingsCupSettings {
+    return this.settings().kingsCup;
+  }
+
+  saveKingsCupSettings(settings: Partial<KingsCupSettings>): void {
+    this.settings.update(s => ({
+      ...s,
+      kingsCup: { ...s.kingsCup, ...settings }
+    }));
+    this.saveSettings();
+  }
+
+  // Quiz Battle
+  getQuizBattleSettings(): QuizBattleSettings {
+    return this.settings().quizBattle;
+  }
+
+  saveQuizBattleSettings(settings: Partial<QuizBattleSettings>): void {
+    this.settings.update(s => ({
+      ...s,
+      quizBattle: { ...s.quizBattle, ...settings }
+    }));
+    this.saveSettings();
+  }
+
+  // Activity
+  getActivitySettings(): ActivitySettings {
+    return this.settings().activity;
+  }
+
+  saveActivitySettings(settings: Partial<ActivitySettings>): void {
+    this.settings.update(s => ({
+      ...s,
+      activity: { ...s.activity, ...settings }
     }));
     this.saveSettings();
   }
