@@ -32,6 +32,10 @@ export class HomeComponent {
   favorites = signal<Set<string>>(this.loadFavorites());
   showFavoritesOnly = signal<boolean>(false);
 
+  // Hidden reset feature
+  private resetClickCount = 0;
+  private resetClickTimer: ReturnType<typeof setTimeout> | null = null;
+
   private loadFavorites(): Set<string> {
     try {
       const stored = localStorage.getItem(FAVORITES_KEY);
@@ -452,5 +456,26 @@ export class HomeComponent {
       'quiz': { primary: '#4DD0E1', secondary: '#26C6DA', accent: '#006064', skin: '#FFE4C4' }
     };
     return colors[gameId] || colors['imposter'];
+  }
+
+  // Hidden feature: Clear localStorage after 5 taps
+  onSecretReset(): void {
+    this.resetClickCount++;
+
+    // Reset counter after 3 seconds of no clicks
+    if (this.resetClickTimer) {
+      clearTimeout(this.resetClickTimer);
+    }
+    this.resetClickTimer = setTimeout(() => {
+      this.resetClickCount = 0;
+    }, 3000);
+
+    if (this.resetClickCount >= 5) {
+      localStorage.clear();
+      this.favorites.set(new Set());
+      this.resetClickCount = 0;
+      // Visual feedback - page will refresh to show cleared state
+      window.location.reload();
+    }
   }
 }

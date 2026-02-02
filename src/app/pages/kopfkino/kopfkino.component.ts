@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Player } from '../../models/player.model';
 import { getRandomStirnratenWord, getStirnratenCategories } from '../../data/words';
 import { GameStateService } from '../../services/game-state.service';
+import { generateUUID } from '../../utils/uuid';
 
 type GamePhase = 'setup' | 'ready' | 'playing' | 'result';
 
@@ -42,11 +43,15 @@ export class KopfkinoComponent implements OnInit, OnDestroy {
   // Timer
   private timerInterval: ReturnType<typeof setInterval> | null = null;
 
+  // Settings
+  private readonly MAX_PLAYERS = 20;
+
   // Input
   newPlayerName = '';
 
   // Computed
   canStartGame = computed(() => this.players().length >= 1);
+  canAddPlayer = computed(() => this.players().length < this.MAX_PLAYERS);
   currentPlayer = computed(() => this.players()[this.currentPlayerIndex()]);
   isLastPlayer = computed(() => this.currentPlayerIndex() >= this.players().length - 1);
 
@@ -91,13 +96,38 @@ export class KopfkinoComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopTimer();
     window.removeEventListener('deviceorientation', this.handleOrientation);
+    this.unlockOrientation();
+  }
+
+  // Screen orientation methods
+  private async lockLandscape(): Promise<void> {
+    try {
+      const orientation = screen.orientation as any;
+      if (orientation && typeof orientation.lock === 'function') {
+        await orientation.lock('landscape');
+      }
+    } catch (error) {
+      // Orientation lock not supported or denied - silently ignore
+      console.warn('Could not lock orientation:', error);
+    }
+  }
+
+  private unlockOrientation(): void {
+    try {
+      const orientation = screen.orientation as any;
+      if (orientation && typeof orientation.unlock === 'function') {
+        orientation.unlock();
+      }
+    } catch (error) {
+      // Silently ignore unlock errors
+    }
   }
 
   // Player management
   addPlayer(): void {
-    if (this.newPlayerName.trim()) {
+    if (this.newPlayerName.trim() && this.canAddPlayer()) {
       const player: Player = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         name: this.newPlayerName.trim(),
         score: 0
       };
@@ -132,6 +162,7 @@ export class KopfkinoComponent implements OnInit, OnDestroy {
     if (!this.canStartGame()) return;
 
     await this.requestGyroscopePermission();
+    await this.lockLandscape();
     this.currentPlayerIndex.set(0);
     this.phase.set('ready');
   }
@@ -268,12 +299,14 @@ export class KopfkinoComponent implements OnInit, OnDestroy {
     this.phase.set('setup');
     this.players.update(p => p.map(player => ({ ...player, score: 0 })));
     this.currentPlayerIndex.set(0);
+    this.unlockOrientation();
   }
 
   // Navigation
   goHome(): void {
     this.stopTimer();
     this.stopGyroscope();
+    this.unlockOrientation();
     this.router.navigate(['/']);
   }
 }

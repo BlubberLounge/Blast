@@ -25,7 +25,7 @@
       <!-- Card 1: Players & Game Settings -->
       <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden relative">
         <!-- Card gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
 
         <!-- Add Players Row -->
         <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
@@ -39,14 +39,16 @@
           </div>
           <div class="flex gap-2">
             <input
+              #playerInput
               type="text"
-              [(ngModel)]="newPlayerName"
-              (keyup.enter)="addPlayer()"
+              [value]="newPlayerName"
+              (input)="newPlayerName = playerInput.value"
+              (keyup.enter)="addPlayer(); playerInput.value = ''"
               placeholder="Name hinzufügen..."
               class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
             />
             <button
-              (click)="addPlayer()"
+              (click)="addPlayer(); playerInput.value = ''"
               class="shrink-0 glass-button bg-blast-primary/80 hover:bg-blast-primary text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,7 +77,7 @@
         </div>
 
         <!-- Max Strikes Row -->
-        <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
+        <div class="relative z-10 p-4 sm:p-5">
           <div class="flex items-center gap-3 mb-3">
             <span class="text-2xl">❌</span>
             <span class="text-white font-semibold flex-1">Fehlversuche</span>
@@ -99,7 +101,7 @@
       <!-- Card 2: Timer Settings -->
       <div class="glass rounded-2xl mb-6 overflow-hidden relative">
         <!-- Card gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
         <!-- Time Duration Row -->
         <div class="relative z-10 p-4 sm:p-5">
           <div class="flex items-center gap-3 mb-4">
@@ -111,7 +113,7 @@
               <button
                 (click)="turnTime.set(time)"
                 [class]="turnTime() === time
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/30'
+                  ? 'bg-linear-to-r from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/30'
                   : 'glass-subtle text-white/60 hover:text-white'"
                 class="h-11 sm:h-12 rounded-xl font-bold transition-all text-sm text-white"
               >
@@ -127,7 +129,7 @@
         (click)="startGame()"
         [disabled]="!canStartGame()"
         [class]="canStartGame()
-          ? 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg shadow-blue-500/30'
+          ? 'bg-linear-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg shadow-blue-500/30'
           : 'glass-subtle cursor-not-allowed text-white/40'"
         class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
       >
@@ -137,7 +139,7 @@
       <!-- Instructions (at bottom) -->
       <div class="glass-subtle rounded-2xl p-4 relative overflow-hidden">
         <!-- Card gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
         <div class="relative z-10 flex items-center gap-2 mb-2">
           <span class="text-lg">📖</span>
           <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
@@ -159,8 +161,8 @@
       <!-- Current Player -->
       <div class="text-center mb-4">
         <p class="text-white/60 text-sm mb-1">Am Zug:</p>
-        <h2 class="text-3xl font-bold text-white">{{ currentPlayer()?.name }}</h2>
-        <p class="text-white/50 text-sm mt-1">{{ getStrikeDisplay(currentPlayer()?.strikes || 0) }}</p>
+        <h2 class="text-3xl font-bold text-white">{{ currentPlayer().name }}</h2>
+        <p class="text-white/50 text-sm mt-1">{{ getStrikeDisplay(currentPlayer().strikes || 0) }}</p>
       </div>
 
       <!-- Timer -->
@@ -168,14 +170,14 @@
         [class]="timeLeft() <= 3 ? 'glass-gradient-red animate-pulse' : 'glass-strong'"
         class="rounded-full w-24 h-24 flex items-center justify-center mb-6 transition-colors relative overflow-hidden"
       >
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
         <span class="relative z-10 text-4xl font-bold text-white">{{ timeLeft() }}</span>
       </div>
 
       <!-- Previous Word / Required Letter -->
       @if (previousWord()) {
         <div class="glass-strong rounded-2xl p-4 mb-4 text-center relative overflow-hidden w-full">
-          <div class="absolute inset-0 bg-gradient-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
+          <div class="absolute inset-0 bg-linear-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
           <p class="relative z-10 text-white/60 text-sm mb-1">Letztes Wort:</p>
           <p class="relative z-10 text-2xl font-bold text-white">{{ previousWord() }}</p>
         </div>
@@ -186,7 +188,7 @@
         </div>
       } @else {
         <div class="glass-strong rounded-2xl p-6 mb-6 text-center relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
+          <div class="absolute inset-0 bg-linear-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
           <p class="relative z-10 text-white/60">Nenne ein beliebiges Wort!</p>
         </div>
       }
@@ -214,7 +216,7 @@
       <div class="flex gap-4 w-full">
         <button
           (click)="submitWord()"
-          class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-green-500/30 hover:opacity-90 transition-all"
+          class="flex-1 bg-linear-to-r from-green-500 to-emerald-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-green-500/30 hover:opacity-90 transition-all"
         >
           Bestätigen
         </button>
@@ -231,7 +233,7 @@
         <div class="flex flex-wrap gap-2 justify-center">
           @for (player of players(); track player.id) {
             <div
-              [class]="player.isOut ? 'opacity-40 line-through' : (player.id === currentPlayer()?.id ? 'ring-2 ring-blue-400' : '')"
+              [class]="player.isOut ? 'opacity-40 line-through' : (player.id === currentPlayer().id ? 'ring-2 ring-blue-400' : '')"
               class="glass-subtle px-3 py-1.5 rounded-full text-white text-sm"
             >
               {{ player.name }} {{ getStrikeDisplay(player.strikes) }}
@@ -246,7 +248,7 @@
   @if (phase() === 'eliminated') {
     <div class="relative z-10 flex flex-col items-center justify-center min-h-[80vh]">
       <div class="glass-strong rounded-3xl p-8 text-center max-w-sm relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
 
         <div class="relative z-10 text-6xl mb-4">💀</div>
         <h2 class="relative z-10 text-2xl font-bold text-white mb-2">Ausgeschieden!</h2>
@@ -257,7 +259,7 @@
 
         <button
           (click)="continueAfterElimination()"
-          class="relative z-10 w-full bg-gradient-to-r from-blue-500 to-indigo-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blue-500/30 hover:opacity-90 transition-all"
+          class="relative z-10 w-full bg-linear-to-r from-blue-500 to-indigo-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blue-500/30 hover:opacity-90 transition-all"
         >
           Weiter spielen
         </button>
@@ -270,7 +272,7 @@
     <div class="relative z-10 max-w-md mx-auto">
       <!-- Header -->
       <div class="glass-strong rounded-2xl p-8 mb-6 text-center relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
         <div class="relative z-10 text-6xl mb-4">🏆</div>
         <h2 class="relative z-10 text-xl text-white/60 mb-2">Gewinner!</h2>
         <p class="relative z-10 text-4xl font-display font-bold text-white">{{ winner()?.name }}</p>
@@ -278,7 +280,7 @@
 
       <!-- Stats -->
       <div class="glass-strong rounded-2xl p-6 mb-6 relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/5 via-transparent to-transparent pointer-events-none z-0"></div>
 
         <h3 class="relative z-10 text-lg font-bold text-white mb-4">Statistik</h3>
         <div class="relative z-10 space-y-2">
@@ -312,7 +314,7 @@
       <div class="flex gap-4">
         <button
           (click)="newGame()"
-          class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blue-500/30 hover:opacity-90 transition-all"
+          class="flex-1 bg-linear-to-r from-blue-500 to-indigo-500 py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blue-500/30 hover:opacity-90 transition-all"
         >
           Nochmal
         </button>

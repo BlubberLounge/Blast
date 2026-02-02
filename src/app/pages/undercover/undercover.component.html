@@ -25,7 +25,7 @@
       <!-- Card 1: Players & Imposter Settings -->
       <div class="glass rounded-2xl mb-4 sm:mb-6 overflow-hidden relative">
         <!-- Card gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
         <!-- Add Players Row -->
         <div class="relative z-10 p-4 sm:p-5 border-b border-white/10">
           <div class="flex items-center gap-3 mb-3">
@@ -38,14 +38,16 @@
           </div>
           <div class="flex gap-2">
             <input
+              #playerInput
               type="text"
-              [(ngModel)]="newPlayerName"
-              (keyup.enter)="addPlayer()"
+              [value]="newPlayerName"
+              (input)="newPlayerName = playerInput.value"
+              (keyup.enter)="addPlayer(); playerInput.value = ''"
               placeholder="Name hinzufügen..."
               class="glass-input flex-1 min-w-0 rounded-xl px-3 py-2.5 text-white placeholder-white/40 focus:outline-none text-sm"
             />
             <button
-              (click)="addPlayer()"
+              (click)="addPlayer(); playerInput.value = ''"
               class="shrink-0 glass-button bg-blast-primary/80 hover:bg-blast-primary text-white w-10 py-2.5 rounded-xl font-semibold transition-all flex items-center justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -78,13 +80,13 @@
           <span class="text-2xl">👻</span>
           <span class="text-white font-semibold flex-1">Imposter</span>
           <div class="flex gap-2">
-            @for (count of [1, 2]; track count) {
+            @for (count of [1, 2, 3, 4, 5]; track count) {
               <button
                 (click)="imposterCount.set(count)"
                 [class]="imposterCount() === count
                   ? 'bg-red-500 text-white shadow-lg shadow-red-500/30'
                   : 'glass-subtle text-white/60 hover:text-white'"
-                class="w-10 h-10 rounded-xl font-bold transition-all text-lg"
+                class="w-9 h-9 rounded-xl font-bold transition-all text-base"
               >
                 {{ count }}
               </button>
@@ -114,7 +116,7 @@
       <!-- Card 2: Timer Settings -->
       <div class="glass rounded-2xl mb-6 overflow-hidden relative">
         <!-- Card gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
         <!-- Time Duration Row -->
         <div class="relative z-10 p-4 sm:p-5">
           <div class="flex items-center gap-3 mb-4">
@@ -126,7 +128,7 @@
               <button
                 (click)="discussionTime.set(time)"
                 [class]="discussionTime() === time
-                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 shadow-lg shadow-orange-500/30'
+                  ? 'bg-linear-to-r from-orange-500 to-amber-500 shadow-lg shadow-orange-500/30'
                   : 'glass-subtle text-white/60 hover:text-white'"
                 class="w-12 h-12 rounded-xl font-bold transition-all text-sm text-white"
               >
@@ -142,7 +144,7 @@
         (click)="startGame()"
         [disabled]="!canStartGame()"
         [class]="canStartGame()
-          ? 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-lg shadow-red-500/30'
+          ? 'bg-linear-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-lg shadow-red-500/30'
           : 'glass-subtle cursor-not-allowed text-white/40'"
         class="w-full py-4 rounded-2xl text-white font-bold text-xl transition-all mb-6"
       >
@@ -152,7 +154,7 @@
       <!-- Instructions (at bottom) -->
       <div class="glass-subtle rounded-2xl p-4 relative overflow-hidden">
         <!-- Card gradient overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
         <div class="relative z-10 flex items-center gap-2 mb-2">
           <span class="text-lg">📖</span>
           <h2 class="text-sm font-semibold text-white/70">So geht's</h2>
@@ -173,16 +175,16 @@
       <!-- Player Name -->
       <div class="text-center mb-8">
         <p class="text-white/60 mb-1 text-sm">Gib das Handy an:</p>
-        <h2 class="text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">{{ currentPlayer()?.name }}</h2>
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-white drop-shadow-lg">{{ currentPlayer().name }}</h2>
       </div>
 
       <!-- Card Container -->
-      <div class="relative w-72 h-96 md:w-80 md:h-[420px]">
+      <div class="relative w-[90vw] md:w-80 aspect-2/3">
         <!-- Role Card (revealed content behind) - Dark and subtle to prevent peeking -->
         <div
-          class="absolute inset-0 rounded-3xl p-6 pb-10 flex flex-col items-center justify-end shadow-2xl card-border bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
+          class="absolute inset-0 rounded-3xl p-6 pb-10 flex flex-col items-center justify-end shadow-2xl card-border bg-linear-to-br from-gray-900 via-gray-800 to-gray-900"
         >
-          @if (currentPlayer()?.isImposter) {
+          @if (currentPlayer().isImposter) {
             <div class="w-14 h-14 mb-3 rounded-full bg-red-500/20 flex items-center justify-center">
               <span class="text-3xl">🕵️</span>
             </div>
@@ -204,7 +206,7 @@
 
         <!-- Cover Card (swipeable, always present) -->
         <div
-          class="absolute inset-0 rounded-3xl bg-gradient-to-br from-blast-primary via-purple-600 to-blast-secondary p-6 flex flex-col items-center justify-center shadow-2xl select-none card-border"
+          class="absolute inset-0 rounded-3xl bg-linear-to-br from-blast-primary via-purple-600 to-blast-secondary p-6 flex flex-col items-center justify-center shadow-2xl select-none card-border"
           [class.cursor-grab]="!isRevealed()"
           [class.active:cursor-grabbing]="!isRevealed()"
           [style.transform]="'translateY(' + cardDragY() + 'px)'"
@@ -225,7 +227,7 @@
           />
 
           <!-- Dark gradient overlay from bottom (matches background) -->
-          <div class="absolute inset-0 bg-gradient-to-t from-[#1a1a2e]/70 via-[#16213e]/30 to-transparent rounded-3xl"></div>
+          <div class="absolute inset-0 bg-linear-to-t from-[#1a1a2e]/70 via-[#16213e]/30 to-transparent rounded-3xl"></div>
 
           <!-- Swipe Indicator (hidden when revealed) -->
           <div
@@ -256,7 +258,7 @@
       <button
         (click)="hideRoleAndNext()"
         [class]="isRevealed() ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-        class="mt-6 w-72 md:w-80 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-opacity duration-300"
+        class="mt-6 w-[90vw] md:w-80 glass-button py-4 rounded-2xl text-white font-bold text-lg transition-opacity duration-300"
       >
         Verstanden ✓
       </button>
@@ -276,7 +278,7 @@
         [class]="timeLeft() <= 30 ? 'glass-gradient-red animate-pulse' : 'glass-strong'"
         class="rounded-3xl p-8 mb-6 transition-colors relative overflow-hidden"
       >
-        <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+        <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
         <div class="relative z-10 text-7xl font-bold text-white font-display drop-shadow-lg">
           {{ formatTime(timeLeft()) }}
         </div>
@@ -302,7 +304,7 @@
         </button>
         <button
           (click)="endDiscussion()"
-          class="bg-gradient-to-r from-red-500 to-orange-500 px-6 py-3 rounded-xl text-white font-semibold transition-all flex items-center gap-2 shadow-lg shadow-red-500/30 hover:opacity-90"
+          class="bg-linear-to-r from-red-500 to-orange-500 px-6 py-3 rounded-xl text-white font-semibold transition-all flex items-center gap-2 shadow-lg shadow-red-500/30 hover:opacity-90"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
             <path d="M6 6h12v12H6z"/>
@@ -325,7 +327,7 @@
         <!-- Pre-reveal state -->
         <div class="flex flex-col items-center justify-center min-h-[60vh]">
           <div class="glass-strong rounded-2xl p-8 mb-6 relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+            <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
             <div class="relative z-10 text-6xl mb-4 drop-shadow-lg">⏰</div>
             <h2 class="relative z-10 text-3xl font-display font-bold text-white drop-shadow-md mb-2">Zeit ist um!</h2>
             <p class="relative z-10 text-white/60">Wer ist der Imposter?</p>
@@ -333,7 +335,7 @@
 
           <button
             (click)="revealImposters()"
-            class="w-full bg-gradient-to-r from-red-500 to-orange-500 py-5 rounded-2xl text-white font-bold text-xl shadow-lg shadow-red-500/30 hover:opacity-90 transition-all animate-pulse"
+            class="w-full bg-linear-to-r from-red-500 to-orange-500 py-5 rounded-2xl text-white font-bold text-xl shadow-lg shadow-red-500/30 hover:opacity-90 transition-all animate-pulse"
           >
             🕵️ Imposter enthüllen
           </button>
@@ -342,18 +344,18 @@
         <!-- Revealed state -->
         <!-- Header -->
         <div class="glass-strong rounded-2xl p-8 mb-6 relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+          <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
           <div class="relative z-10 text-6xl mb-4 drop-shadow-lg">🕵️</div>
           <h2 class="relative z-10 text-3xl font-display font-bold text-white drop-shadow-md">Aufgelöst!</h2>
         </div>
 
         <!-- Reveal -->
         <div class="glass-strong rounded-2xl p-6 mb-6 relative overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
+          <div class="absolute inset-0 bg-linear-to-t from-white/10 via-transparent to-transparent pointer-events-none z-0"></div>
 
           <!-- Secret Word -->
           <h3 class="relative z-10 text-lg font-bold text-white/60 mb-2">Das Wort war:</h3>
-          <p class="relative z-10 text-4xl font-bold bg-gradient-to-r from-blast-primary to-blast-secondary bg-clip-text text-transparent mb-6">{{ secretWord() }}</p>
+          <p class="relative z-10 text-4xl font-bold bg-linear-to-r from-blast-primary to-blast-secondary bg-clip-text text-transparent mb-6">{{ secretWord() }}</p>
 
           <!-- Imposter Reveal -->
           <div class="relative z-10 glass-gradient-red rounded-xl p-4">
@@ -374,7 +376,7 @@
         <div class="flex gap-4">
           <button
             (click)="playAgain()"
-            class="flex-1 bg-gradient-to-r from-blast-primary to-blast-secondary py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blast-primary/30 hover:opacity-90 transition-all"
+            class="flex-1 bg-linear-to-r from-blast-primary to-blast-secondary py-4 rounded-2xl text-white font-bold text-lg shadow-lg shadow-blast-primary/30 hover:opacity-90 transition-all"
           >
             Nochmal
           </button>

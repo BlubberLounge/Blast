@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { GameStateService } from '../../services/game-state.service';
+import { generateUUID } from '../../utils/uuid';
 
 interface Player {
   id: string;
@@ -71,6 +72,7 @@ export class LippenlesenComponent implements OnDestroy {
   // Settings
   selectedCategory = signal<string>('Zufällig');
   roundTime = signal<number>(30);
+  private readonly MAX_PLAYERS = 10;
 
   // Timer
   timeLeft = signal<number>(30);
@@ -85,6 +87,7 @@ export class LippenlesenComponent implements OnDestroy {
 
   // Computed
   canStartGame = computed(() => this.players().length >= 2);
+  canAddPlayer = computed(() => this.players().length < this.MAX_PLAYERS);
   currentPlayer = computed(() => this.players()[this.currentPlayerIndex()]);
   isLastRound = computed(() => this.roundNumber() >= this.totalRounds() * this.players().length);
   sortedPlayers = computed(() => [...this.players()].sort((a, b) => b.score - a.score));
@@ -128,9 +131,9 @@ export class LippenlesenComponent implements OnDestroy {
 
   // Player management
   addPlayer(): void {
-    if (this.newPlayerName.trim()) {
+    if (this.newPlayerName.trim() && this.canAddPlayer()) {
       const player: Player = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         name: this.newPlayerName.trim(),
         score: 0
       };

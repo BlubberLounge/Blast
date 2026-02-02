@@ -1,5 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { Player } from '../models/player.model';
+import { generateUUID } from '../utils/uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,7 @@ export class GameService {
   // Add player
   addPlayer(name: string): void {
     const player: Player = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       name: name.trim(),
       score: 0
     };

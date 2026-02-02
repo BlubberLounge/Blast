@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { GameStateService } from '../../services/game-state.service';
+import { generateUUID } from '../../utils/uuid';
 
 interface Player {
   id: string;
@@ -33,6 +34,7 @@ export class WoerterketteComponent implements OnDestroy {
   // Settings
   turnTime = signal<number>(10);
   maxStrikes = signal<number>(3);
+  private readonly MAX_PLAYERS = 8;
 
   // Timer
   timeLeft = signal<number>(10);
@@ -48,6 +50,7 @@ export class WoerterketteComponent implements OnDestroy {
 
   // Computed
   canStartGame = computed(() => this.players().length >= 2);
+  canAddPlayer = computed(() => this.players().length < this.MAX_PLAYERS);
   currentPlayer = computed(() => {
     const activePlayers = this.players().filter(p => !p.isOut);
     const idx = this.currentPlayerIndex() % activePlayers.length;
@@ -94,9 +97,9 @@ export class WoerterketteComponent implements OnDestroy {
 
   // Player management
   addPlayer(): void {
-    if (this.newPlayerName.trim()) {
+    if (this.newPlayerName.trim() && this.canAddPlayer()) {
       const player: Player = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         name: this.newPlayerName.trim(),
         strikes: 0,
         isOut: false

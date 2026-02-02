@@ -13,14 +13,14 @@
       <!-- Logo -->
       <div class="inline-block relative">
         <h1 class="text-5xl md:text-7xl lg:text-8xl font-display font-black tracking-tight">
-          <span class="bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent drop-shadow-lg">B</span>
-          <span class="bg-gradient-to-r from-red-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">L</span>
-          <span class="bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">A</span>
-          <span class="bg-gradient-to-r from-pink-400 via-rose-400 to-red-400 bg-clip-text text-transparent">S</span>
-          <span class="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">T</span>
+          <span class="bg-linear-to-r from-white via-white to-white/80 bg-clip-text text-transparent drop-shadow-lg">B</span>
+          <span class="bg-linear-to-r from-red-400 via-orange-400 to-amber-400 bg-clip-text text-transparent">L</span>
+          <span class="bg-linear-to-r from-blue-400 via-cyan-400 to-teal-400 bg-clip-text text-transparent">A</span>
+          <span class="bg-linear-to-r from-pink-400 via-rose-400 to-red-400 bg-clip-text text-transparent">S</span>
+          <span class="bg-linear-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">T</span>
         </h1>
         <!-- Glow effect -->
-        <div class="absolute inset-0 blur-3xl opacity-40 bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 -z-10"></div>
+        <div class="absolute inset-0 blur-3xl opacity-40 bg-linear-to-r from-red-500 via-purple-500 to-blue-500 -z-10"></div>
       </div>
 
       <p class="text-white/60 text-lg md:text-xl mt-4 font-light tracking-wide">
@@ -109,13 +109,13 @@
 
           <!-- Gradient Overlay -->
           <div
-            class="absolute inset-0 bg-gradient-to-br opacity-60 group-hover:opacity-80 transition-opacity duration-300"
+            class="absolute inset-0 bg-linear-to-br opacity-60 group-hover:opacity-80 transition-opacity duration-300"
             [class]="game.gradient"
           ></div>
 
           <!-- Shine Effect -->
           <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            <div class="absolute inset-0 bg-linear-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
           </div>
 
           <!-- Disabled Overlay -->
@@ -194,7 +194,7 @@
     <footer class="mt-16 text-center">
       <div class="glass inline-flex items-center gap-2 px-5 py-3 rounded-full">
         <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></span>
-        <span class="text-white/60 text-sm">Mehr Spiele kommen bald</span>
+        <span class="text-white/60 text-sm cursor-pointer select-none" (click)="onSecretReset()">Mehr Spiele kommen bald</span>
       </div>
       <div class="text-white/30 text-xs mt-6 space-y-1">
         <div>v{{ version }}</div>

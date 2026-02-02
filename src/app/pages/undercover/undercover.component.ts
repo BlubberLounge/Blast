@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Player } from '../../models/player.model';
 import { getRandomImposterWord } from '../../data/words';
 import { GameStateService } from '../../services/game-state.service';
+import { generateUUID } from '../../utils/uuid';
 
 type GamePhase = 'setup' | 'reveal' | 'discussion' | 'result';
 
@@ -41,14 +42,19 @@ export class UndercoverComponent implements OnInit, OnDestroy {
   // Result phase
   impostersRevealed = signal<boolean>(false);
 
+  // Character indices (randomized per game)
+  characterIndices = signal<number[]>([]);
+
   // Settings
   showImposterHint = signal<boolean>(true);
+  private readonly MAX_PLAYERS = 10;
 
   // Input
   newPlayerName = '';
 
   // Computed
   canStartGame = computed(() => this.players().length >= 3);
+  canAddPlayer = computed(() => this.players().length < this.MAX_PLAYERS);
   currentPlayer = computed(() => this.players()[this.currentRevealIndex()]);
   allRevealed = computed(() => this.currentRevealIndex() >= this.players().length);
   imposters = computed(() => this.players().filter(p => p.isImposter));
@@ -136,9 +142,9 @@ export class UndercoverComponent implements OnInit, OnDestroy {
 
   // Player management
   addPlayer(): void {
-    if (this.newPlayerName.trim()) {
+    if (this.newPlayerName.trim() && this.canAddPlayer()) {
       const player: Player = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         name: this.newPlayerName.trim(),
         isImposter: false
       };
@@ -172,9 +178,29 @@ export class UndercoverComponent implements OnInit, OnDestroy {
       }))
     );
 
+    // Generate randomized character indices for each player
+    this.characterIndices.set(this.generateRandomCharacterIndices(this.players().length));
+
     this.currentRevealIndex.set(0);
     this.getNewPastelColor(); // Random color for first card
     this.phase.set('reveal');
+  }
+
+  // Generate unique random character indices for all players
+  private generateRandomCharacterIndices(playerCount: number): number[] {
+    const totalCharacters = 19; // character-0.jpg through character-18.jpg
+
+    // Create array of all character indices [0, 1, 2, ..., 18]
+    const allIndices = Array.from({ length: totalCharacters }, (_, i) => i);
+
+    // Fisher-Yates shuffle
+    for (let i = allIndices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allIndices[i], allIndices[j]] = [allIndices[j], allIndices[i]];
+    }
+
+    // Return first N characters (one unique character per player)
+    return allIndices.slice(0, playerCount);
   }
 
   // Reveal phase - Card swipe handlers (hold to reveal mechanic)
@@ -204,17 +230,12 @@ export class UndercoverComponent implements OnInit, OnDestroy {
     if (!this.isDragging()) return;
     this.isDragging.set(false);
 
-    // Check if role was seen (past threshold)
-    const wasRevealed = this.cardDragY() <= this.REVEAL_THRESHOLD;
-
     // Always snap back down
     this.cardDragY.set(0);
     this.showingRole.set(false);
 
-    // If was revealed, mark as seen and move to next
-    if (wasRevealed) {
-      this.isRevealed.set(true);
-    }
+    // Show the button as soon as user releases the card
+    this.isRevealed.set(true);
   }
 
   // Mouse events for desktop testing
@@ -296,9 +317,11 @@ export class UndercoverComponent implements OnInit, OnDestroy {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
-  // Get character index for current player (0-6)
+  // Get character index for current player (0-18, randomized)
   getCharacterIndex(): number {
-    return this.currentRevealIndex() % 7;
+    const indices = this.characterIndices();
+    const currentIndex = this.currentRevealIndex();
+    return indices[currentIndex] ?? (currentIndex % 19);
   }
 
   // Pastel colors for character card gradients

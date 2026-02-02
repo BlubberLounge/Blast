@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Player } from '../../models/player.model';
 import { getRandomStirnratenWord, getStirnratenCategories } from '../../data/words';
 import { GameStateService } from '../../services/game-state.service';
+import { generateUUID } from '../../utils/uuid';
 
 type GamePhase = 'setup' | 'ready' | 'drawing' | 'passing' | 'guessing' | 'evaluation' | 'scores';
 
@@ -69,7 +70,11 @@ export class MontagsmalerComponent implements OnInit, OnDestroy, AfterViewInit {
   // Input
   newPlayerName = '';
 
+  // Settings
+  private readonly MAX_PLAYERS = 12;
+
   // Computed
+  canAddPlayer = computed(() => this.players().length < this.MAX_PLAYERS);
   categories = computed(() => {
     const search = this.categorySearch().toLowerCase().trim();
     if (!search) return this.allCategories;
@@ -269,9 +274,9 @@ export class MontagsmalerComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // Player management
   addPlayer(): void {
-    if (this.newPlayerName.trim()) {
+    if (this.newPlayerName.trim() && this.canAddPlayer()) {
       const player: Player = {
-        id: crypto.randomUUID(),
+        id: generateUUID(),
         name: this.newPlayerName.trim(),
         score: 0
       };
